@@ -1,0 +1,1718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2D Game Engine — Developer Field Notes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,600;1,400&family=Fraunces:ital,wght@0,300;0,700;1,300&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg:        #0c0e14;
+  --bg2:       #13161f;
+  --bg3:       #1a1e2b;
+  --border:    #252a38;
+  --border2:   #2e3447;
+  --text:      #e2e6f0;
+  --muted:     #7a8299;
+  --dim:       #3d4460;
+
+  --indigo:    #6c8aff;
+  --indigo-d:  #3d56cc;
+  --indigo-bg: #151a2e;
+  --teal:      #2dd4bf;
+  --teal-d:    #0d9488;
+  --teal-bg:   #0d1f1e;
+  --amber:     #f59e0b;
+  --amber-bg:  #1f1809;
+  --red:       #f87171;
+  --red-bg:    #1f0d0d;
+  --purple:    #a78bfa;
+  --purple-bg: #180e2a;
+  --green:     #4ade80;
+  --green-bg:  #0c1f10;
+  --pink:      #f472b6;
+
+  --sidebar-w: 260px;
+  --radius:    8px;
+  --radius-lg: 14px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  line-height: 1.7;
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ─── Scrollbar ─────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+/* ─── Sidebar ───────────────────────────────────────────── */
+#sidebar {
+  width: var(--sidebar-w);
+  min-height: 100vh;
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  position: fixed;
+  top: 0; left: 0;
+  display: flex; flex-direction: column;
+  z-index: 100;
+  overflow-y: auto;
+}
+
+.sidebar-logo {
+  padding: 22px 20px 18px;
+  border-bottom: 1px solid var(--border);
+}
+.sidebar-logo .engine-tag {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: var(--teal);
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  display: block;
+}
+.sidebar-logo h2 {
+  font-family: 'Fraunces', serif;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.3;
+}
+
+.mac-dots { display: flex; gap: 6px; margin-bottom: 14px; }
+.mac-dots span { width: 11px; height: 11px; border-radius: 50%; }
+.mac-dots .d-r { background: #ff5f57; }
+.mac-dots .d-y { background: #ffbd2e; }
+.mac-dots .d-g { background: #28c840; }
+
+.nav-group { padding: 18px 20px 4px; }
+.nav-group-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--dim);
+  margin-bottom: 8px;
+}
+
+.nav-link {
+  display: flex; align-items: center; gap: 9px;
+  padding: 7px 10px;
+  border-radius: var(--radius);
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 13.5px;
+  font-weight: 500;
+  transition: background .15s, color .15s;
+  margin-bottom: 1px;
+}
+.nav-link:hover { background: var(--bg3); color: var(--text); }
+.nav-link.active { background: var(--indigo-bg); color: var(--indigo); }
+.nav-link .nav-icon { font-size: 13px; width: 18px; text-align: center; flex-shrink: 0; }
+.nav-link .concern-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--amber); margin-left: auto; flex-shrink: 0;
+}
+
+.sidebar-footer {
+  margin-top: auto;
+  padding: 16px 20px;
+  border-top: 1px solid var(--border);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: var(--dim);
+}
+
+/* ─── Main content ──────────────────────────────────────── */
+#main {
+  margin-left: var(--sidebar-w);
+  flex: 1;
+  min-width: 0;
+}
+
+/* ─── Hero ─────────────────────────────────────────────── */
+.hero {
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  padding: 56px 56px 48px;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse 60% 80% at 80% 50%, rgba(108,138,255,.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+.hero-tag {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--teal);
+  display: inline-flex; align-items: center; gap: 7px;
+  background: var(--teal-bg);
+  border: 1px solid var(--teal-d);
+  padding: 4px 12px;
+  border-radius: 99px;
+  margin-bottom: 22px;
+}
+.hero h1 {
+  font-family: 'Fraunces', serif;
+  font-size: clamp(32px, 4vw, 52px);
+  font-weight: 700;
+  line-height: 1.1;
+  color: #fff;
+  margin-bottom: 14px;
+}
+.hero h1 em { font-style: italic; color: var(--indigo); }
+.hero-sub {
+  color: var(--muted);
+  font-size: 16px;
+  max-width: 560px;
+  margin-bottom: 32px;
+}
+.hero-meta {
+  display: flex; flex-wrap: wrap; gap: 20px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: var(--dim);
+}
+.hero-meta span { display: flex; align-items: center; gap: 6px; }
+.hero-meta span b { color: var(--muted); }
+
+/* ─── Concern strip ─────────────────────────────────────── */
+.concern-strip {
+  background: var(--amber-bg);
+  border-bottom: 1px solid #3d2700;
+  padding: 10px 56px;
+  display: flex; align-items: center; gap: 14px;
+  flex-wrap: wrap;
+}
+.concern-strip-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--amber);
+  flex-shrink: 0;
+}
+.concern-pill {
+  font-size: 12px; font-weight: 600;
+  color: var(--amber);
+  background: rgba(245,158,11,.12);
+  border: 1px solid rgba(245,158,11,.3);
+  padding: 3px 11px;
+  border-radius: 99px;
+}
+
+/* ─── Content sections ──────────────────────────────────── */
+.content { padding: 0 56px 80px; }
+.section { padding-top: 60px; }
+
+.section-header {
+  display: flex; align-items: center; gap: 14px;
+  margin-bottom: 28px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+.section-num {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: var(--dim);
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  padding: 4px 10px;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+.section-title {
+  font-family: 'Fraunces', serif;
+  font-size: 26px;
+  font-weight: 700;
+  color: #fff;
+}
+.section-title .accent { color: var(--indigo); }
+
+h3.sub-head {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: .08em;
+  color: var(--muted);
+  margin-top: 40px; margin-bottom: 14px;
+  display: flex; align-items: center; gap: 8px;
+}
+h3.sub-head::after {
+  content: '';
+  flex: 1; height: 1px;
+  background: var(--border);
+}
+
+p { color: var(--muted); margin-bottom: 14px; }
+p strong { color: var(--text); font-weight: 600; }
+
+/* ─── Cards ─────────────────────────────────────────────── */
+.card-grid { display: grid; gap: 14px; }
+.card-grid.g2 { grid-template-columns: repeat(2, 1fr); }
+.card-grid.g3 { grid-template-columns: repeat(3, 1fr); }
+.card-grid.g4 { grid-template-columns: repeat(4, 1fr); }
+
+.card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  transition: border-color .2s;
+}
+.card:hover { border-color: var(--border2); }
+.card-accent { border-top: 2px solid; }
+.card-accent.indigo { border-top-color: var(--indigo); }
+.card-accent.teal   { border-top-color: var(--teal); }
+.card-accent.amber  { border-top-color: var(--amber); }
+.card-accent.red    { border-top-color: var(--red); }
+.card-accent.purple { border-top-color: var(--purple); }
+.card-accent.green  { border-top-color: var(--green); }
+.card-accent.pink   { border-top-color: var(--pink); }
+
+.card-icon {
+  width: 36px; height: 36px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px; margin-bottom: 12px;
+  flex-shrink: 0;
+}
+.card h4 {
+  font-size: 14px; font-weight: 600;
+  color: var(--text); margin-bottom: 6px;
+}
+.card p { font-size: 13px; line-height: 1.6; color: var(--muted); margin: 0; }
+
+/* ─── Concern callout ───────────────────────────────────── */
+.concern-box {
+  background: var(--amber-bg);
+  border: 1px solid rgba(245,158,11,.25);
+  border-left: 3px solid var(--amber);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: 16px 20px;
+  margin: 20px 0;
+}
+.concern-box .cb-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--amber); margin-bottom: 8px; font-weight: 600;
+}
+.concern-box p { color: rgba(245,158,11,.85); font-size: 13.5px; margin: 0; font-style: italic; }
+
+.info-box {
+  background: var(--indigo-bg);
+  border: 1px solid rgba(108,138,255,.25);
+  border-left: 3px solid var(--indigo);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: 16px 20px;
+  margin: 20px 0;
+}
+.info-box p { color: rgba(162,182,255,.85); font-size: 13.5px; margin: 0; }
+
+.success-box {
+  background: var(--green-bg);
+  border: 1px solid rgba(74,222,128,.2);
+  border-left: 3px solid var(--green);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: 16px 20px;
+  margin: 20px 0;
+}
+.success-box p { color: rgba(74,222,128,.85); font-size: 13.5px; margin: 0; }
+
+/* ─── Code blocks ───────────────────────────────────────── */
+.code-block {
+  background: #0a0c12;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin: 20px 0;
+  font-family: 'IBM Plex Mono', monospace;
+}
+.code-header {
+  background: var(--bg3);
+  border-bottom: 1px solid var(--border);
+  padding: 9px 16px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.code-lang {
+  font-size: 10px; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--dim);
+}
+.code-title { font-size: 11px; color: var(--muted); }
+.code-body { padding: 20px; overflow-x: auto; font-size: 13px; line-height: 1.8; }
+.k { color: #a78bfa; }  /* keyword */
+.t { color: #60d8f3; }  /* type */
+.c { color: var(--dim); font-style: italic; }  /* comment */
+.s { color: #a8d8a8; }  /* string */
+.n { color: #f9c66b; }  /* number */
+.fn { color: #6c8aff; } /* function */
+.op { color: var(--muted); }
+.plain { color: var(--text); }
+
+code {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12.5px;
+  background: var(--bg3);
+  color: var(--teal);
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+/* ─── Architecture layers ───────────────────────────────── */
+.arch-stack { display: flex; flex-direction: column; gap: 3px; }
+.arch-layer {
+  display: flex; align-items: stretch;
+  border-radius: 8px; overflow: hidden;
+  border: 1px solid var(--border2);
+  transition: transform .15s;
+}
+.arch-layer:hover { transform: translateX(4px); }
+.arch-layer-label {
+  width: 160px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  text-align: center;
+  font-size: 12px; font-weight: 700;
+  padding: 14px 12px;
+  color: #fff;
+}
+.arch-layer-content {
+  flex: 1;
+  background: var(--bg3);
+  display: flex; align-items: center;
+  padding: 12px 18px;
+  font-size: 13px; color: var(--muted);
+  border-left: 1px solid var(--border2);
+}
+.arch-arrow {
+  text-align: center; color: var(--dim);
+  font-size: 12px; padding: 2px 0;
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+/* ─── Pipeline bar ──────────────────────────────────────── */
+.pipeline {
+  display: flex; align-items: center; gap: 0;
+  background: var(--bg3); border: 1px solid var(--border2);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin: 20px 0;
+}
+.pipe-step {
+  flex: 1; padding: 16px 12px; text-align: center;
+  position: relative;
+  font-size: 12px;
+}
+.pipe-step + .pipe-step::before {
+  content: '→';
+  position: absolute; left: 0; top: 50%; transform: translate(-50%, -50%);
+  color: var(--dim); font-size: 14px; z-index: 1;
+}
+.pipe-step .ps-name { font-weight: 700; font-size: 13px; color: var(--text); margin-bottom: 4px; }
+.pipe-step .ps-sub  { color: var(--dim); font-size: 11px; }
+
+/* ─── Loop flowchart ────────────────────────────────────── */
+.loop-chart { display: flex; flex-direction: column; align-items: center; gap: 0; }
+.loop-node {
+  width: 260px; padding: 12px 20px;
+  border-radius: 8px;
+  text-align: center;
+  font-weight: 600; font-size: 13px;
+  position: relative;
+}
+.loop-arrow { color: var(--dim); font-size: 18px; line-height: 1; padding: 3px 0; }
+.loop-diamond {
+  width: 220px; padding: 14px;
+  background: var(--purple-bg);
+  border: 2px solid var(--purple);
+  transform: rotate(0deg);
+  border-radius: 8px;
+  text-align: center;
+  font-weight: 700; font-size: 13px; color: var(--purple);
+  position: relative;
+}
+.loop-group {
+  display: flex; align-items: stretch; gap: 0;
+  width: 100%; max-width: 560px;
+}
+.loop-group-inner { display: flex; flex-direction: column; align-items: center; flex: 1; }
+.loop-branch {
+  font-size: 11px; color: var(--dim);
+  font-family: 'IBM Plex Mono', monospace;
+  padding: 4px 8px;
+}
+
+/* ─── Frame budget bar ──────────────────────────────────── */
+.budget-bar { border-radius: 8px; overflow: hidden; height: 42px; display: flex; margin: 16px 0; }
+.budget-seg { display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: white; padding: 0 10px; }
+.budget-legend { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-top: 12px; }
+.legend-item { display: flex; align-items: center; gap: 8px; }
+.legend-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+.legend-label { font-size: 12px; color: var(--muted); }
+
+/* ─── Tags / pills ──────────────────────────────────────── */
+.tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.tag {
+  font-size: 11px; font-weight: 600;
+  padding: 3px 10px; border-radius: 99px;
+  border: 1px solid;
+  font-family: 'IBM Plex Mono', monospace;
+}
+.tag-i { color: var(--indigo); border-color: rgba(108,138,255,.3); background: rgba(108,138,255,.08); }
+.tag-t { color: var(--teal);   border-color: rgba(45,212,191,.3);  background: rgba(45,212,191,.08); }
+.tag-a { color: var(--amber);  border-color: rgba(245,158,11,.3);  background: rgba(245,158,11,.08); }
+.tag-r { color: var(--red);    border-color: rgba(248,113,113,.3); background: rgba(248,113,113,.08); }
+.tag-p { color: var(--purple); border-color: rgba(167,139,250,.3); background: rgba(167,139,250,.08); }
+.tag-g { color: var(--green);  border-color: rgba(74,222,128,.3);  background: rgba(74,222,128,.08); }
+.tag-m { color: var(--muted);  border-color: var(--border2);       background: var(--bg3); }
+
+/* ─── Table ─────────────────────────────────────────────── */
+.data-table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 16px 0; }
+.data-table th {
+  background: var(--bg3);
+  color: var(--muted); font-weight: 600;
+  font-size: 11px; letter-spacing: .06em; text-transform: uppercase;
+  padding: 10px 14px; text-align: left;
+  border-bottom: 1px solid var(--border2);
+}
+.data-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  color: var(--muted);
+  vertical-align: top;
+}
+.data-table td strong { color: var(--text); }
+.data-table tr:last-child td { border-bottom: none; }
+.data-table tr:hover td { background: var(--bg3); }
+
+/* ─── Phase cards ───────────────────────────────────────── */
+.phase-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; }
+.phase-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+.phase-card-head {
+  padding: 18px 20px 14px;
+}
+.phase-card-head .ph-num {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px; letter-spacing: .1em; text-transform: uppercase;
+  margin-bottom: 4px;
+  opacity: .7;
+}
+.phase-card-head h4 { font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 3px; }
+.phase-card-head .ph-weeks { font-size: 12px; opacity: .6; }
+.phase-card-body { padding: 14px 20px 20px; }
+.phase-item {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px; color: var(--muted);
+}
+.phase-item:last-child { border-bottom: none; }
+.phase-item .pi-check { color: var(--green); font-size: 12px; flex-shrink: 0; margin-top: 2px; }
+.phase-item strong { color: var(--text); }
+
+/* ─── Stack cards ───────────────────────────────────────── */
+.stack-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 14px; }
+.stack-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 22px;
+}
+.stack-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.stack-name { font-size: 17px; font-weight: 700; color: #fff; }
+.stack-badge {
+  font-size: 11px; font-weight: 700;
+  padding: 3px 10px; border-radius: 99px;
+}
+.stack-desc { font-size: 13px; color: var(--muted); line-height: 1.6; margin-bottom: 14px; }
+.stack-libs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-bottom: 14px; }
+.stack-lib {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; color: var(--muted);
+}
+.stack-lib .sl-cat { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--dim); min-width: 64px; }
+.stack-lib .sl-val { color: var(--text); font-weight: 600; }
+.stars { display: flex; gap: 2px; }
+.star-full { color: var(--amber); font-size: 12px; }
+.star-empty { color: var(--border2); font-size: 12px; }
+.verdict-bar {
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+  padding: 9px 13px;
+  font-size: 12px; color: var(--muted);
+  line-height: 1.5;
+}
+.verdict-bar strong { color: var(--text); }
+
+/* ─── Testing steps ─────────────────────────────────────── */
+.test-steps { display: flex; flex-direction: column; gap: 12px; }
+.test-step {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+  display: flex; gap: 16px; align-items: flex-start;
+}
+.test-step .ts-icon {
+  width: 38px; height: 38px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; flex-shrink: 0;
+}
+.test-step h4 { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 5px; }
+.test-step p { font-size: 13px; color: var(--muted); line-height: 1.6; margin: 0; }
+
+/* ─── Concern section ───────────────────────────────────── */
+.concern-section { 
+  background: var(--amber-bg);
+  border: 1px solid rgba(245,158,11,.2);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  margin: 24px 0;
+}
+.concern-section h3 {
+  font-family: 'Fraunces', serif;
+  font-size: 20px; font-weight: 700;
+  color: var(--amber); margin-bottom: 10px;
+}
+.concern-section .cs-quote {
+  font-style: italic;
+  color: rgba(245,158,11,.7);
+  font-size: 14px;
+  border-left: 2px solid rgba(245,158,11,.4);
+  padding-left: 14px;
+  margin-bottom: 18px;
+  line-height: 1.6;
+}
+.concern-section > p { color: rgba(245,158,11,.75); font-size: 13.5px; }
+
+.mitigation-list { list-style: none; display: flex; flex-direction: column; gap: 8px; margin: 14px 0; }
+.mitigation-list li {
+  display: flex; align-items: flex-start; gap: 10px;
+  font-size: 13px; color: var(--muted);
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  padding: 12px 14px;
+}
+.mitigation-list li::before {
+  content: '→';
+  color: var(--teal); font-weight: 700; flex-shrink: 0; margin-top: 1px;
+  font-family: 'IBM Plex Mono', monospace;
+}
+.mitigation-list li strong { color: var(--text); }
+
+/* ─── ADR table ─────────────────────────────────────────── */
+.adr-table { display: flex; flex-direction: column; gap: 10px; margin: 20px 0; }
+.adr-row {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+  display: grid;
+  grid-template-columns: 140px 1fr 1fr;
+  gap: 16px; align-items: start;
+}
+.adr-decision { font-weight: 700; color: var(--text); font-size: 13px; }
+.adr-choice { font-size: 13px; color: var(--muted); }
+.adr-alt { font-size: 12px; color: var(--dim); font-family: 'IBM Plex Mono', monospace; }
+
+/* ─── Responsive ────────────────────────────────────────── */
+@media (max-width: 900px) {
+  #sidebar { display: none; }
+  #main { margin-left: 0; }
+  .hero, .content { padding-left: 24px; padding-right: 24px; }
+  .concern-strip { padding-left: 24px; padding-right: 24px; }
+  .card-grid.g2, .card-grid.g3, .card-grid.g4 { grid-template-columns: 1fr; }
+  .phase-grid, .stack-grid { grid-template-columns: 1fr; }
+  .pipeline { flex-wrap: wrap; }
+  .adr-row { grid-template-columns: 1fr; }
+}
+
+/* ─── Fade-in animation ─────────────────────────────────── */
+.section { animation: fadeUp .4s ease both; }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── Active nav highlight ──────────────────────────────── */
+.section:target .section-header { border-bottom-color: var(--indigo); }
+</style>
+</head>
+<body>
+
+<!-- ═══ SIDEBAR ═══════════════════════════════════════════ -->
+<aside id="sidebar">
+  <div class="sidebar-logo">
+    <div class="mac-dots"><span class="d-r"></span><span class="d-y"></span><span class="d-g"></span></div>
+    <span class="engine-tag">Dev Field Notes</span>
+    <h2>2D Game Engine</h2>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Part I — Fundamentals</div>
+    <a href="#what-is-it"   class="nav-link"><span class="nav-icon">🧠</span>What is a Game Engine?</a>
+    <a href="#components"   class="nav-link"><span class="nav-icon">🔩</span>Core Components</a>
+    <a href="#where-start"  class="nav-link"><span class="nav-icon">🚀</span>How to Start</a>
+    <a href="#how-test"     class="nav-link"><span class="nav-icon">🧪</span>Testing Systems</a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Part II — Architecture</div>
+    <a href="#rules"        class="nav-link"><span class="nav-icon">⚖️</span>3 Ironclad Rules</a>
+    <a href="#arch"         class="nav-link"><span class="nav-icon">🏗️</span>5-Tier Architecture</a>
+    <a href="#loop"         class="nav-link"><span class="nav-icon">🔄</span>The Game Loop</a>
+    <a href="#pipelines"    class="nav-link"><span class="nav-icon">🎨</span>Core Pipelines</a>
+    <a href="#budget"       class="nav-link"><span class="nav-icon">⏱️</span>16ms Frame Budget</a>
+    <a href="#roadmap"      class="nav-link"><span class="nav-icon">🗺️</span>MVP Roadmap</a>
+    <a href="#techstack"    class="nav-link"><span class="nav-icon">📦</span>Tech Stack Matrix</a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Part III — Team Concerns</div>
+    <a href="#c-graphicsapi"  class="nav-link"><span class="nav-icon">🖥️</span>Graphics API<span class="concern-dot"></span></a>
+    <a href="#c-threading"    class="nav-link"><span class="nav-icon">🧵</span>Multithreading<span class="concern-dot"></span></a>
+    <a href="#c-layering"     class="nav-link"><span class="nav-icon">🗂️</span>Layering<span class="concern-dot"></span></a>
+    <a href="#c-gc"           class="nav-link"><span class="nav-icon">♻️</span>Garbage Collectors<span class="concern-dot"></span></a>
+    <a href="#c-shaders"      class="nav-link"><span class="nav-icon">✨</span>Shaders<span class="concern-dot"></span></a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Reference</div>
+    <a href="#adr"          class="nav-link"><span class="nav-icon">📋</span>Decision Log</a>
+    <a href="#glossary"     class="nav-link"><span class="nav-icon">📖</span>Glossary</a>
+  </div>
+
+  <div class="sidebar-footer">
+    engine_notes.v2.html — rev 2<br>
+    28 weeks · 5 phases · 5 concerns
+  </div>
+</aside>
+
+<!-- ═══ MAIN ═══════════════════════════════════════════════ -->
+<div id="main">
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-tag">⚙ Complete Field Notes — Rev 2</div>
+    <h1>Building a <em>2D Game Engine</em><br>From Zero to Production</h1>
+    <p class="hero-sub">Fundamental concepts, strict architecture blueprints, team concern deep-dives, and a 28-week delivery plan — everything a developer needs on one page.</p>
+    <div class="hero-meta">
+      <span>📁 <b>engine_notes.html</b></span>
+      <span>📐 <b>5-tier architecture</b></span>
+      <span>🚩 <b>5 team concerns annotated</b></span>
+      <span>⏰ <b>28-week roadmap</b></span>
+      <span>🔧 <b>7 language stacks</b></span>
+    </div>
+  </div>
+
+  <!-- Concern strip -->
+  <div class="concern-strip">
+    <span class="concern-strip-label">⚠ Team concerns flagged throughout:</span>
+    <span class="concern-pill">Graphics API</span>
+    <span class="concern-pill">Multithreading</span>
+    <span class="concern-pill">Layering</span>
+    <span class="concern-pill">Garbage Collectors</span>
+    <span class="concern-pill">Shaders</span>
+  </div>
+
+  <div class="content">
+
+    <!-- ═══ SECTION: What is a game engine ════════════ -->
+    <section id="what-is-it" class="section">
+      <div class="section-header">
+        <span class="section-num">§ 1.1</span>
+        <h2 class="section-title">What is a <span class="accent">Game Engine?</span></h2>
+      </div>
+      <p>At its core, a game engine is a <strong>strict hardware abstraction layer</strong>. Its single job is to isolate pure game logic from the volatile, platform-specific demands of the Operating System (OS) and Graphics Processing Unit (GPU).</p>
+      <p>Instead of writing code that talks directly to Windows, macOS, or a specific graphics card, game developers write "Game Code" — like making a character jump. The engine translates that jump into the complex math and hardware instructions needed to update physics and render pixels. It removes magic and provides a predictable, data-oriented environment running in a tightly controlled loop.</p>
+
+      <div class="info-box">
+        <p><strong>Key insight:</strong> The engine is not the game. The engine is the operating system your game runs on top of. Every decision you make building the engine will constrain — or liberate — the game teams that use it for years.</p>
+      </div>
+
+      <h3 class="sub-head">The Mental Model</h3>
+      <div class="card-grid g3">
+        <div class="card card-accent indigo">
+          <div class="card-icon" style="background:var(--indigo-bg)">🎮</div>
+          <h4>Game Code</h4>
+          <p>The logic unique to your game: character stats, level design, dialogue. This should be 100% portable — it never calls OpenGL or reads raw keyboard state directly.</p>
+        </div>
+        <div class="card card-accent teal">
+          <div class="card-icon" style="background:var(--teal-bg)">⚙️</div>
+          <h4>Engine Layer</h4>
+          <p>The reusable machinery: renderer, physics, audio, ECS, asset manager. Platform-agnostic. The engine translates game intent into hardware commands.</p>
+        </div>
+        <div class="card card-accent amber">
+          <div class="card-icon" style="background:var(--amber-bg)">🖥️</div>
+          <h4>OS / Hardware</h4>
+          <p>The actual machine: GPU drivers, OS windowing, file system, audio device. The engine isolates all game code from this volatile, vendor-specific layer.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ SECTION: Components ════════════════════════ -->
+    <section id="components" class="section">
+      <div class="section-header">
+        <span class="section-num">§ 1.2</span>
+        <h2 class="section-title">Core <span class="accent">Components</span></h2>
+      </div>
+      <p>An engine is broken into specific subsystems, each handling a different hardware responsibility. Every subsystem is a contained module with a well-defined interface to the rest of the engine.</p>
+
+      <div class="card-grid g2">
+        <div class="card card-accent indigo">
+          <div class="card-icon" style="background:var(--indigo-bg)">🖼️</div>
+          <h4>Renderer Pipeline</h4>
+          <p>Collects draw calls from ECS systems, sorts by layer and texture, batches sprites sharing an atlas into single GPU draw calls, executes shaders, swaps framebuffer. Sprite batching is the single highest-leverage optimisation in 2D.</p>
+          <div class="tags"><span class="tag tag-i">OpenGL</span><span class="tag tag-i">Vulkan</span><span class="tag tag-m">Texture Atlas</span><span class="tag tag-m">Z-sorting</span></div>
+        </div>
+        <div class="card card-accent teal">
+          <div class="card-icon" style="background:var(--teal-bg)">🔩</div>
+          <h4>ECS — Entity-Component-System</h4>
+          <p>Entities are numeric IDs. Components are plain data structs stored in contiguous arrays. Systems iterate matching arrays — no virtual dispatch, no OOP inheritance, cache-friendly by construction.</p>
+          <div class="tags"><span class="tag tag-t">EnTT</span><span class="tag tag-t">flecs</span><span class="tag tag-m">Sparse-set</span><span class="tag tag-m">Archetype</span></div>
+        </div>
+        <div class="card card-accent purple">
+          <div class="card-icon" style="background:var(--purple-bg)">🧲</div>
+          <h4>Physics Engine</h4>
+          <p>Broadphase (spatial hash) quickly rules out impossible collisions. Narrowphase (SAT/GJK) tests candidate pairs precisely. Impulse resolution applies corrective forces. Trigger sensors fire events without blocking movement.</p>
+          <div class="tags"><span class="tag tag-p">Box2D</span><span class="tag tag-p">rapier2d</span><span class="tag tag-m">SAT</span><span class="tag tag-m">GJK</span></div>
+        </div>
+        <div class="card card-accent amber">
+          <div class="card-icon" style="background:var(--amber-bg)">📦</div>
+          <h4>Asset Manager</h4>
+          <p>Handle-based loader: request returns an opaque handle immediately; loading is async. A cache map prevents duplicate decodes. Reference counting drives eviction — assets unload when no handle remains.</p>
+          <div class="tags"><span class="tag tag-a">stb_image</span><span class="tag tag-a">Hot reload</span><span class="tag tag-m">Ref-count</span></div>
+        </div>
+        <div class="card card-accent green">
+          <div class="card-icon" style="background:var(--green-bg)">🎮</div>
+          <h4>Input System</h4>
+          <p>OS events polled once per real frame into a platform-agnostic state map. Action mapping layer binds logical actions (Jump, Fire) to physical buttons — enabling remapping without touching game code.</p>
+          <div class="tags"><span class="tag tag-g">SDL3</span><span class="tag tag-m">Action map</span><span class="tag tag-m">Input buffer</span></div>
+        </div>
+        <div class="card card-accent pink">
+          <div class="card-icon" style="background:#1f0a18">🔊</div>
+          <h4>Audio Engine</h4>
+          <p>Sound emitters pass through spatial processing (distance attenuation, panning). SFX, music, and voice hit separate mixer channels. Both paths merge at master mixer before the audio device.</p>
+          <div class="tags"><span class="tag" style="color:var(--pink);border-color:rgba(244,114,182,.3);background:rgba(244,114,182,.08)">miniaudio</span><span class="tag tag-m">OpenAL</span><span class="tag tag-m">Positional</span></div>
+        </div>
+        <div class="card card-accent red">
+          <div class="card-icon" style="background:var(--red-bg)">📡</div>
+          <h4>Event Bus</h4>
+          <p>Typed event structs. Publishers emit; subscribers register by event type. Dispatch deferred to end-of-tick to prevent re-entrant mutation during system iteration. Zero coupling between producers and consumers.</p>
+          <div class="tags"><span class="tag tag-r">Pub/sub</span><span class="tag tag-m">Deferred</span><span class="tag tag-m">Typed events</span></div>
+        </div>
+        <div class="card card-accent indigo">
+          <div class="card-icon" style="background:var(--indigo-bg)">🗺️</div>
+          <h4>Scene Manager</h4>
+          <p>Named scene registry with async loading. Stacked scenes let a pause menu overlay gameplay without unloading it. Transition hooks (fade, cut) allow smooth scene changes. OnEnter/OnExit lifecycle events per scene.</p>
+          <div class="tags"><span class="tag tag-i">Stack</span><span class="tag tag-i">Async load</span><span class="tag tag-m">Transitions</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ SECTION: How to start ══════════════════════ -->
+    <section id="where-start" class="section">
+      <div class="section-header">
+        <span class="section-num">§ 1.3</span>
+        <h2 class="section-title">How to <span class="accent">Start</span></h2>
+      </div>
+      <p>The golden rule: <strong>Build the loop first. Draw a sprite. Ship something playable before writing a single line of editor code.</strong> Do not start with the ECS or a physics engine.</p>
+
+      <div class="success-box">
+        <p><strong>The Skeleton rule:</strong> The first milestone is exactly this — a window opens, a sprite appears, WASD moves it, the window does not crash. Everything else is Phase 2 or later.</p>
+      </div>
+
+      <h3 class="sub-head">Build order</h3>
+      <table class="data-table">
+        <thead><tr><th>#</th><th>Step</th><th>What you're proving</th><th>Library / tool</th></tr></thead>
+        <tbody>
+          <tr><td><strong style="color:var(--indigo)">1</strong></td><td><strong>Window + GL context</strong></td><td>OS integration, graphics context creation, clear loop</td><td><code>SDL3</code> / <code>GLFW</code></td></tr>
+          <tr><td><strong style="color:var(--indigo)">2</strong></td><td><strong>Fixed-timestep game loop</strong></td><td>Real-time loop, accumulator, fps logging, spiral-of-death cap</td><td><code>std::chrono</code></td></tr>
+          <tr><td><strong style="color:var(--indigo)">3</strong></td><td><strong>Keyboard + mouse polling</strong></td><td>Input abstraction, IsDown/IsPressed edges, once-per-frame</td><td><code>SDL_Event</code></td></tr>
+          <tr><td><strong style="color:var(--indigo)">4</strong></td><td><strong>Single sprite on screen</strong></td><td>PNG loading, texture upload, UV mapping, textured quad draw</td><td><code>stb_image</code> + OpenGL</td></tr>
+          <tr><td><strong style="color:var(--teal)">5</strong></td><td><strong>Sprite batching</strong></td><td>Atlas packing, group-by-texture, single draw call per atlas</td><td>Custom + <code>RenderDoc</code></td></tr>
+          <tr><td><strong style="color:var(--teal)">6</strong></td><td><strong>AABB collisions</strong></td><td>Broadphase, collision callback, trigger sensors</td><td>Custom AABB</td></tr>
+          <tr><td><strong style="color:var(--teal)">7</strong></td><td><strong>Handle-based asset cache</strong></td><td>Ref-counting, load-once, hot path has no malloc</td><td>Custom handles</td></tr>
+          <tr><td><strong style="color:var(--purple)">8</strong></td><td><strong>EnTT ECS refactor</strong></td><td>Sparse-set storage, query iteration, system scheduling</td><td><code>EnTT</code></td></tr>
+          <tr><td><strong style="color:var(--purple)">9</strong></td><td><strong>Box2D physics integration</strong></td><td>Rigid body, constraints, wrapped behind PhysicsBody component</td><td><code>Box2D 2.4</code></td></tr>
+        </tbody>
+      </table>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">C++ — pseudocode</span>
+          <span class="code-title">Minimal fixed-timestep skeleton</span>
+        </div>
+        <div class="code-body">
+<span class="k">const</span> <span class="t">double</span> <span class="plain">FIXED_DT</span> <span class="op">=</span> <span class="n">1.0</span> <span class="op">/</span> <span class="n">60.0</span><span class="op">;</span>
+<span class="k">double</span> <span class="plain">accumulator</span>  <span class="op">=</span> <span class="n">0.0</span><span class="op">;</span>
+<span class="k">double</span> <span class="plain">previous_time</span> <span class="op">=</span> <span class="fn">now</span><span class="op">();</span>
+
+<span class="k">while</span> <span class="op">(</span><span class="plain">running</span><span class="op">) {</span>
+  <span class="k">double</span> <span class="plain">current_time</span>  <span class="op">=</span> <span class="fn">now</span><span class="op">();</span>
+  <span class="k">double</span> <span class="plain">frame_time</span>    <span class="op">=</span> <span class="fn">min</span><span class="op">(</span><span class="plain">current_time</span> <span class="op">-</span> <span class="plain">previous_time</span><span class="op">,</span> <span class="n">0.25</span><span class="op">);</span>  <span class="c">// cap: no spiral</span>
+  <span class="plain">previous_time</span>          <span class="op">=</span> <span class="plain">current_time</span><span class="op">;</span>
+  <span class="plain">accumulator</span>          <span class="op">+=</span> <span class="plain">frame_time</span><span class="op">;</span>
+
+  <span class="plain">input</span><span class="op">.</span><span class="fn">poll</span><span class="op">();</span>                              <span class="c">// once per real frame</span>
+
+  <span class="k">while</span> <span class="op">(</span><span class="plain">accumulator</span> <span class="op">>=</span> <span class="plain">FIXED_DT</span><span class="op">) {</span>
+    <span class="plain">physics</span><span class="op">.</span><span class="fn">step</span><span class="op">(</span><span class="plain">FIXED_DT</span><span class="op">);</span>
+    <span class="plain">ecs</span><span class="op">.</span><span class="fn">update_systems</span><span class="op">(</span><span class="plain">FIXED_DT</span><span class="op">);</span>
+    <span class="plain">accumulator</span> <span class="op">-=</span> <span class="plain">FIXED_DT</span><span class="op">;</span>
+  <span class="op">}</span>
+
+  <span class="k">const</span> <span class="k">double</span> <span class="plain">alpha</span> <span class="op">=</span> <span class="plain">accumulator</span> <span class="op">/</span> <span class="plain">FIXED_DT</span><span class="op">;</span>  <span class="c">// interpolation factor</span>
+  <span class="plain">renderer</span><span class="op">.</span><span class="fn">draw</span><span class="op">(</span><span class="plain">alpha</span><span class="op">);</span>
+<span class="op">}</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ SECTION: Testing ═══════════════════════════ -->
+    <section id="how-test" class="section">
+      <div class="section-header">
+        <span class="section-num">§ 1.4</span>
+        <h2 class="section-title">Testing <span class="accent">Each System</span></h2>
+      </div>
+      <p>Early-stage engine testing is visual. You rely on console logging, colour-coded overlays, and failure modes that are unmistakable.</p>
+
+      <div class="test-steps">
+        <div class="test-step">
+          <div class="ts-icon" style="background:var(--indigo-bg)">🪟</div>
+          <div>
+            <h4>Testing the Window & Platform Layer</h4>
+            <p>Open the window. Change the clear colour from code (<code>glClearColor(r, g, b, 1)</code>). If the window opens without crash and the colour changes when you change your constant, the platform layer is functional. Try resizing — does the viewport update? Try closing — does it exit cleanly?</p>
+          </div>
+        </div>
+        <div class="test-step">
+          <div class="ts-icon" style="background:var(--teal-bg)">⏱️</div>
+          <div>
+            <h4>Testing the Game Loop</h4>
+            <p>Move your single sprite using <code>pos.x += vel * fixed_dt</code>. Then intentionally call <code>sleep(1000ms)</code> for one second. If the game crashes trying to execute 60 backed-up physics ticks, your loop is broken — add the 250ms cap. Speed should be identical regardless of frame rate: test at 30fps and 144fps.</p>
+          </div>
+        </div>
+        <div class="test-step">
+          <div class="ts-icon" style="background:var(--purple-bg)">⌨️</div>
+          <div>
+            <h4>Testing Input</h4>
+            <p>Map WASD to sprite XY movement. Verify <strong>IsPressed()</strong> only fires on the first frame of a keypress (not held). Verify <strong>IsReleased()</strong> fires exactly once. Log input events to console for the first week — you'll catch subtle bugs (double-firing, sticky keys) that are impossible to see otherwise.</p>
+          </div>
+        </div>
+        <div class="test-step">
+          <div class="ts-icon" style="background:var(--amber-bg)">🎨</div>
+          <div>
+            <h4>Testing the Renderer / Sprite Batching</h4>
+            <p>Open <strong>RenderDoc</strong> and capture a frame. Count the draw calls. If you have 200 sprites using the same atlas and see 200 draw calls, batching is broken. Correctly batched, you should see exactly 1 draw call per unique atlas. This is your renderer's primary correctness test.</p>
+          </div>
+        </div>
+        <div class="test-step">
+          <div class="ts-icon" style="background:var(--red-bg)">🧱</div>
+          <div>
+            <h4>Testing Physics & Collisions</h4>
+            <p>Write a <strong>debug renderer</strong> that draws wireframe AABB boxes over every collider. Boxes turn <span style="color:var(--red)">red</span> on intersection, <span style="color:var(--green)">green</span> when clear. Test: two boxes overlap → red. Separate them → green. Fire <code>OnCollision</code> callback and log to console. This visual test will save you weeks of debugging invisible collision bugs.</p>
+          </div>
+        </div>
+        <div class="test-step">
+          <div class="ts-icon" style="background:var(--green-bg)">📦</div>
+          <div>
+            <h4>Testing the Asset Manager</h4>
+            <p>Request the same texture handle twice. Verify the file is only opened once (log in the decode function). Drop one handle and verify the asset stays loaded. Drop both handles and verify the asset is evicted. Run with <code>AddressSanitizer</code> (ASan) — any double-free or use-after-free in your ref-counting logic will surface immediately.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ SECTION: Rules ════════════════════════════ -->
+    <section id="rules" class="section">
+      <div class="section-header">
+        <span class="section-num">§ 2.1</span>
+        <h2 class="section-title">The 3 <span class="accent">Ironclad Rules</span></h2>
+      </div>
+      <p>These rules are not suggestions. Every system in your engine must be designed to satisfy all three. Violating any one will eventually force a full architectural rewrite.</p>
+      <div class="card-grid g3">
+        <div class="card card-accent indigo">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:32px;font-weight:700;color:var(--indigo);opacity:.4;margin-bottom:10px">01</div>
+          <h4>Strict Isolation</h4>
+          <p>Layers only speak to the layer directly below. Game code never calls the GPU or reads raw hardware input. The renderer never reads from the ECS directly — it reads from a command buffer the ECS wrote.</p>
+        </div>
+        <div class="card card-accent teal">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:32px;font-weight:700;color:var(--teal);opacity:.4;margin-bottom:10px">02</div>
+          <h4>Explicit Over Implicit</h4>
+          <p>No magic. If a system runs, it must be visible in the scheduler. Implicit dependencies between systems cause frame-order bugs that only appear on specific hardware at specific frame rates — the worst category of bug.</p>
+        </div>
+        <div class="card card-accent purple">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:32px;font-weight:700;color:var(--purple);opacity:.4;margin-bottom:10px">03</div>
+          <h4>Data-Oriented Design</h4>
+          <p>Components are plain data structs — no virtual methods, no inheritance. Systems iterate contiguous arrays. A CPU cache line is 64 bytes: if your component fits 4-per-line and you iterate 10,000 of them, you make 2,500 cache fetches instead of 10,000.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ SECTION: Architecture ══════════════════════ -->
+    <section id="arch" class="section">
+      <div class="section-header">
+        <span class="section-num">§ 2.2</span>
+        <h2 class="section-title">5-Tier <span class="accent">Architecture</span></h2>
+      </div>
+      <p>Dependencies flow strictly downwards. A module may call into the layer below it. It may <em>never</em> call into the layer above it — only emit events through the event bus that upper layers subscribe to.</p>
+
+      <div class="arch-stack" style="margin:24px 0">
+        <div class="arch-layer">
+          <div class="arch-layer-label" style="background:var(--purple)">Game Code</div>
+          <div class="arch-layer-content">Scenes · Entities · Scripts · Game state · UI logic · Level data</div>
+        </div>
+        <div class="arch-arrow">↓ depends on</div>
+        <div class="arch-layer">
+          <div class="arch-layer-label" style="background:var(--teal-d)">ECS / Scene</div>
+          <div class="arch-layer-content">Entity registry · Component pools · System scheduler · Scene graph · Scene manager</div>
+        </div>
+        <div class="arch-arrow">↓ depends on</div>
+        <div class="arch-layer">
+          <div class="arch-layer-label" style="background:var(--indigo-d)">Core Systems</div>
+          <div class="arch-layer-content">Renderer · Physics · Input · Audio · Asset manager · Event bus · Animation</div>
+        </div>
+        <div class="arch-arrow">↓ depends on</div>
+        <div class="arch-layer">
+          <div class="arch-layer-label" style="background:var(--amber)">Platform Layer</div>
+          <div class="arch-layer-content">Window context · File I/O · Timer / clock · Threading primitives · OS APIs</div>
+        </div>
+        <div class="arch-arrow">↓ depends on</div>
+        <div class="arch-layer">
+          <div class="arch-layer-label" style="background:var(--dim)">OS / Hardware</div>
+          <div class="arch-layer-content">OpenGL · Vulkan · Metal · WebGPU · GPU driver · OS file system · Audio device</div>
+        </div>
+      </div>
+
+      <div class="concern-box">
+        <div class="cb-label">⚠ Team concern — Layering</div>
+        <p>"How do we prevent every system from depending on every other system? We've seen spaghetti in past projects." — See <a href="#c-layering" style="color:var(--amber)">§ 4.3 for full mitigation.</a></p>
+      </div>
+
+      <h3 class="sub-head">Enforcement mechanisms</h3>
+      <ul class="mitigation-list">
+        <li><strong>CMake library targets</strong> — Each layer is a separate CMake target. Cross-layer includes that violate the dependency direction fail to link. No compiler warnings: build failures.</li>
+        <li><strong>Forward declarations</strong> — Never include a higher-layer header from a lower-layer module. Use forward declarations at every boundary.</li>
+        <li><strong>Event bus as upward channel</strong> — The only way a lower layer communicates upward is by emitting a typed event. Upper layers subscribe. No direct calls upward ever.</li>
+        <li><strong>Dependency graph review</strong> — Run <code>cmake --graphviz=deps.dot</code> quarterly. Visualise the actual dependency graph. Flag any cycles immediately.</li>
+      </ul>
+    </section>
+
+    <!-- ═══ SECTION: Game Loop ════════════════════════ -->
+    <section id="loop" class="section">
+      <div class="section-header">
+        <span class="section-num">§ 2.3</span>
+        <h2 class="section-title">The Fixed-Timestep <span class="accent">Game Loop</span></h2>
+      </div>
+      <p>The game loop is the heartbeat. A deterministic simulation requires a <strong>fixed timestep</strong>, while rendering runs at a variable rate. The accumulator pattern solves this by separating the two.</p>
+
+      <div class="card-grid g2" style="margin-bottom:24px">
+        <div class="card">
+          <h4 style="color:var(--teal)">✓ Fixed-rate update path</h4>
+          <p>Physics and game logic run exactly at <code>FIXED_DT = 1/60s</code>. This guarantees determinism: the same input always produces the same output. Essential for replays, networking, and physics stability.</p>
+        </div>
+        <div class="card">
+          <h4 style="color:var(--indigo)">✓ Variable-rate render path</h4>
+          <p>Rendering runs as fast as the GPU allows. The <code>alpha</code> factor (remainder / fixed_dt) linearly interpolates object positions between physics ticks, eliminating visual jitter on high-refresh monitors.</p>
+        </div>
+      </div>
+
+      <h3 class="sub-head">System execution order within each fixed tick</h3>
+      <table class="data-table">
+        <thead><tr><th>Step</th><th>System</th><th>Why this order</th></tr></thead>
+        <tbody>
+          <tr><td><strong style="color:var(--indigo)">1</strong></td><td><strong>Input poll</strong></td><td>Must be first — all downstream systems read from this frame's input snapshot</td></tr>
+          <tr><td><strong style="color:var(--indigo)">2</strong></td><td><strong>Physics step</strong></td><td>Physics must see this frame's input before game logic does</td></tr>
+          <tr><td><strong style="color:var(--teal)">3</strong></td><td><strong>Game logic / ECS</strong></td><td>Reads physics results; applies game rules, AI, cooldowns</td></tr>
+          <tr><td><strong style="color:var(--teal)">4</strong></td><td><strong>Animation update</strong></td><td>Reads final transform; advances sprite frames, fires timeline events</td></tr>
+          <tr><td><strong style="color:var(--purple)">5</strong></td><td><strong>Event dispatch</strong></td><td>Flushed after all systems — prevents re-entrant mutation during iteration</td></tr>
+          <tr><td><strong style="color:var(--purple)">6</strong></td><td><strong>Camera update</strong></td><td>Follows targets after they've moved; camera lag calculations need final positions</td></tr>
+          <tr><td><strong style="color:var(--amber)">7</strong></td><td><strong>Render (free-rate)</strong></td><td>Outside the fixed loop — uses interpolated positions, submits to GPU</td></tr>
+        </tbody>
+      </table>
+
+      <h3 class="sub-head">Common pitfalls</h3>
+      <div class="card-grid g2">
+        <div class="card card-accent red">
+          <h4>Spiral of Death</h4>
+          <p>If each physics tick takes longer than <code>FIXED_DT</code>, the accumulator grows faster than it drains — the game can never catch up. Fix: cap <code>frame_time = min(frame_time, 0.25)</code>.</p>
+        </div>
+        <div class="card card-accent red">
+          <h4>Missing dt Multiply</h4>
+          <p>Any velocity applied without multiplying by <code>dt</code> becomes frame-rate dependent. At 120fps the game runs 2x faster than at 60fps. Every position update must be <code>pos += vel * fixed_dt</code>.</p>
+        </div>
+        <div class="card card-accent amber">
+          <h4>Rendering Physics Positions Directly</h4>
+          <p>Without interpolation, objects rendered at raw physics positions jitter visibly when render rate differs from physics rate. Always: <code>render_pos = prev_pos + (curr_pos - prev_pos) * alpha</code>.</p>
+        </div>
+        <div class="card card-accent amber">
+          <h4>Reading Input Inside Systems</h4>
+          <p>If two physics ticks fire in one real frame, they must see the <em>same</em> input state. Poll input exactly once per real frame, before the fixed loop begins.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ SECTION: Pipelines ════════════════════════ -->
+    <section id="pipelines" class="section">
+      <div class="section-header">
+        <span class="section-num">§ 2.4</span>
+        <h2 class="section-title">Core <span class="accent">Pipelines</span></h2>
+      </div>
+
+      <h3 class="sub-head">Renderer pipeline — Data compression</h3>
+      <p><strong>The golden rule: a texture bind is a draw call break.</strong> One texture atlas = one draw call for every sprite it contains. Batch counts dictate 2D performance, not polygon counts.</p>
+
+      <div class="pipeline">
+        <div class="pipe-step" style="background:rgba(108,138,255,.08)">
+          <div class="ps-name">Collect</div>
+          <div class="ps-sub">Draw calls from ECS</div>
+        </div>
+        <div class="pipe-step" style="background:rgba(167,139,250,.08)">
+          <div class="ps-name">Sort</div>
+          <div class="ps-sub">Layer → Shader → Texture</div>
+        </div>
+        <div class="pipe-step" style="background:rgba(45,212,191,.12)">
+          <div class="ps-name" style="color:var(--teal)">Batch</div>
+          <div class="ps-sub">Group by atlas</div>
+        </div>
+        <div class="pipe-step" style="background:rgba(96,216,243,.08)">
+          <div class="ps-name">Upload</div>
+          <div class="ps-sub">Vertex buffer to GPU</div>
+        </div>
+        <div class="pipe-step" style="background:rgba(74,222,128,.08)">
+          <div class="ps-name">Execute</div>
+          <div class="ps-sub">Shader + swap</div>
+        </div>
+      </div>
+
+      <div class="concern-box">
+        <div class="cb-label">⚠ Team concern — Shaders</div>
+        <p>"Shaders are a black box for half the team. How do we structure the pipeline so graphics programmers and engine programmers don't block each other?" — See <a href="#c-shaders" style="color:var(--amber)">§ 4.5 for full mitigation.</a></p>
+      </div>
+
+      <h3 class="sub-head">Physics collision pipeline</h3>
+      <p>Reduces O(N²) collision checks to a manageable O(N) broadphase + O(k) narrowphase where k ≪ N.</p>
+      <div class="pipeline">
+        <div class="pipe-step" style="background:rgba(71,85,105,.1)">
+          <div class="ps-name">All entities</div>
+          <div class="ps-sub">N objects in world</div>
+        </div>
+        <div class="pipe-step" style="background:rgba(108,138,255,.08)">
+          <div class="ps-name">Broadphase</div>
+          <div class="ps-sub">Spatial hash grid</div>
+        </div>
+        <div class="pipe-step" style="background:rgba(167,139,250,.08)">
+          <div class="ps-name">Narrowphase</div>
+          <div class="ps-sub">SAT / GJK tests</div>
+        </div>
+        <div class="pipe-step" style="background:rgba(248,113,113,.08)">
+          <div class="ps-name">Resolution</div>
+          <div class="ps-sub">Impulse apply</div>
+        </div>
+        <div class="pipe-step" style="background:rgba(245,158,11,.08)">
+          <div class="ps-name">Triggers</div>
+          <div class="ps-sub">OnEnter / OnExit</div>
+        </div>
+      </div>
+
+      <h3 class="sub-head">ECS data flow</h3>
+      <div class="code-block">
+        <div class="code-header"><span class="code-lang">C++ / EnTT</span><span class="code-title">System query pattern</span></div>
+        <div class="code-body">
+<span class="c">// Systems declare exactly what they read and write.</span>
+<span class="c">// The scheduler can parallelise non-conflicting systems automatically.</span>
+
+<span class="k">void</span> <span class="fn">MovementSystem</span><span class="op">(</span><span class="t">entt::registry</span><span class="op">&</span> <span class="plain">reg</span><span class="op">,</span> <span class="t">float</span> <span class="plain">dt</span><span class="op">) {</span>
+    <span class="c">// Query: entities that have BOTH Transform AND Velocity</span>
+    <span class="k">auto</span> <span class="plain">view</span> <span class="op">=</span> <span class="plain">reg</span><span class="op">.</span><span class="fn">view</span><span class="op">&lt;</span><span class="t">Transform</span><span class="op">,</span> <span class="k">const</span> <span class="t">Velocity</span><span class="op">&gt;();</span>
+
+    <span class="c">// Iterates a contiguous array — L1 cache stays hot</span>
+    <span class="k">for</span> <span class="op">(</span><span class="k">auto</span> <span class="op">[</span><span class="plain">entity</span><span class="op">,</span> <span class="plain">xfm</span><span class="op">,</span> <span class="plain">vel</span><span class="op">]</span> <span class="op">:</span> <span class="plain">view</span><span class="op">.</span><span class="fn">each</span><span class="op">()) {</span>
+        <span class="plain">xfm</span><span class="op">.</span><span class="plain">position</span> <span class="op">+=</span> <span class="plain">vel</span><span class="op">.</span><span class="plain">value</span> <span class="op">*</span> <span class="plain">dt</span><span class="op">;</span>
+    <span class="op">}</span>
+<span class="op">}</span>
+
+<span class="c">// Tag components: zero-size, used as markers for filtering</span>
+<span class="k">struct</span> <span class="t">Player</span> <span class="op">{};</span>  <span class="c">// marks the player entity — no data needed</span>
+
+<span class="c">// Query only player entities:</span>
+<span class="k">auto</span> <span class="plain">players</span> <span class="op">=</span> <span class="plain">reg</span><span class="op">.</span><span class="fn">view</span><span class="op">&lt;</span><span class="t">Transform</span><span class="op">,</span> <span class="t">entt::exclude_t</span><span class="op">&lt;</span><span class="t">Enemy</span><span class="op">&gt;&gt;();</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ SECTION: Frame Budget ══════════════════════ -->
+    <section id="budget" class="section">
+      <div class="section-header">
+        <span class="section-num">§ 2.5</span>
+        <h2 class="section-title">16.67ms <span class="accent">Frame Budget</span></h2>
+      </div>
+      <p>Every architectural rule exists to ensure all game logic completes within the 60 FPS frame boundary. At 60Hz, you have exactly <strong>16.67 milliseconds</strong>. This is your budget. There is no overdraft.</p>
+
+      <div class="budget-bar">
+        <div class="budget-seg" style="width:30%;background:var(--teal-d)">Physics ~5ms</div>
+        <div class="budget-seg" style="width:18%;background:var(--indigo-d)">Logic ~3ms</div>
+        <div class="budget-seg" style="width:36%;background:#b91c1c">Render ~6ms</div>
+        <div class="budget-seg" style="width:16%;background:var(--amber)">Misc ~2.7ms</div>
+      </div>
+      <div class="budget-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--teal-d)"></div><span class="legend-label">Physics / collision</span></div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--indigo-d)"></div><span class="legend-label">Logic / ECS systems</span></div>
+        <div class="legend-item"><div class="legend-dot" style="background:#b91c1c"></div><span class="legend-label">Render / GPU submit</span></div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--amber)"></div><span class="legend-label">Audio / misc overhead</span></div>
+      </div>
+
+      <h3 class="sub-head">Budget by target frame rate</h3>
+      <table class="data-table">
+        <thead><tr><th>Target</th><th>Budget</th><th>Physics</th><th>Logic/ECS</th><th>Render</th><th>Misc</th></tr></thead>
+        <tbody>
+          <tr><td><strong style="color:var(--muted)">30 fps</strong></td><td>33.3 ms</td><td>~10 ms</td><td>~5 ms</td><td>~12 ms</td><td>~4 ms</td></tr>
+          <tr><td><strong style="color:var(--teal)">60 fps</strong></td><td>16.7 ms</td><td>~5 ms</td><td>~3 ms</td><td>~6 ms</td><td>~2 ms</td></tr>
+          <tr><td><strong style="color:var(--indigo)">120 fps</strong></td><td>8.3 ms</td><td>~2 ms</td><td>~1.5 ms</td><td>~3 ms</td><td>~1 ms</td></tr>
+        </tbody>
+      </table>
+
+      <div class="info-box" style="margin-top:16px">
+        <p><strong>Profiling rule:</strong> Do not guess where time is spent. Use <code>Tracy</code> or <code>Remotery</code> to instrument each system with named zones. The bottleneck is almost never where you expect it. Measure first, optimise second.</p>
+      </div>
+    </section>
+
+    <!-- ═══ SECTION: Roadmap ══════════════════════════ -->
+    <section id="roadmap" class="section">
+      <div class="section-header">
+        <span class="section-num">§ 2.6</span>
+        <h2 class="section-title">MVP <span class="accent">Roadmap</span></h2>
+      </div>
+      <p>Phases are strictly sequential. Do not start Phase 2 until Phase 1's exit criterion is met. Build the minimum system on which a playable prototype can run — then layer in complexity.</p>
+
+      <div class="phase-grid">
+        <div class="phase-card" style="border-top:3px solid var(--muted)">
+          <div class="phase-card-head" style="background:rgba(71,85,105,.12)">
+            <div class="ph-num" style="color:var(--muted)">Phase 1</div>
+            <h4>Skeleton</h4>
+            <div class="ph-weeks" style="color:var(--muted)">Weeks 1 – 2</div>
+          </div>
+          <div class="phase-card-body">
+            <div class="phase-item"><span class="pi-check">✓</span><div><strong>Wall-clock game loop</strong> — fixed timestep, fps counter, 250ms cap</div></div>
+            <div class="phase-item"><span class="pi-check">✓</span><div><strong>Window + GL context</strong> — SDL3, OpenGL 4.6 core, clear colour</div></div>
+            <div class="phase-item"><span class="pi-check">✓</span><div><strong>Single sprite on screen</strong> — stb_image, textured quad, no batching</div></div>
+            <div class="phase-item"><span class="pi-check">✓</span><div><strong>Keyboard + mouse polling</strong> — IsDown, IsPressed, IsReleased</div></div>
+            <div class="phase-item" style="border:0;padding-top:10px"><span style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--dim)">Exit: sprite moves with WASD at stable 60Hz</span></div>
+          </div>
+        </div>
+
+        <div class="phase-card" style="border-top:3px solid var(--indigo)">
+          <div class="phase-card-head" style="background:var(--indigo-bg)">
+            <div class="ph-num" style="color:var(--indigo)">Phase 2</div>
+            <h4>Playable</h4>
+            <div class="ph-weeks" style="color:var(--indigo)">Weeks 3 – 6</div>
+          </div>
+          <div class="phase-card-body">
+            <div class="phase-item"><span class="pi-check">✓</span><div><strong>Sprite batching</strong> — atlas grouping, RenderDoc validation</div></div>
+            <div class="phase-item"><span class="pi-check">✓</span><div><strong>AABB collisions</strong> — broadphase, OnCollision callback</div></div>
+            <div class="phase-item"><span class="pi-check">✓</span><div><strong>Handle-based asset cache</strong> — ref-count, no hot-path alloc</div></div>
+            <div class="phase-item"><span class="pi-check">✓</span><div><strong>Basic audio</strong> — WAV/OGG, play/stop, miniaudio</div></div>
+            <div class="phase-item" style="border:0;padding-top:10px"><span style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--dim)">Exit: playable platformer prototype</span></div>
+          </div>
+        </div>
+
+        <div class="phase-card" style="border-top:3px solid var(--teal)">
+          <div class="phase-card-head" style="background:var(--teal-bg)">
+            <div class="ph-num" style="color:var(--teal)">Phase 3</div>
+            <h4>Production</h4>
+            <div class="ph-weeks" style="color:var(--teal)">Weeks 7 – 14</div>
+          </div>
+          <div class="phase-card-body">
+            <div class="phase-item"><span class="pi-check">✓</span><div><strong>EnTT ECS refactor</strong> — sparse-set, archetype queries</div></div>
+            <div class="phase-item"><span class="pi-check">✓</span><div><strong>Box2D integration</strong> — wrapped in PhysicsBody component</div></div>
+            <div class="phase-item"><span class="pi-check">✓</span><div><strong>Animation state machine</strong> — transitions, frame events</div></div>
+            <div class="phase-item"><span class="pi-check">✓</span><div><strong>Scene stack manager</strong> — async load, stacked scenes</div></div>
+            <div class="phase-item" style="border:0;padding-top:10px"><span style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--dim)">Exit: complex RPG prototype functional</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ SECTION: Tech Stack ═══════════════════════ -->
+    <section id="techstack" class="section">
+      <div class="section-header">
+        <span class="section-num">§ 2.7</span>
+        <h2 class="section-title">Language & <span class="accent">Tech Stack Matrix</span></h2>
+      </div>
+      <p>The right stack depends on team expertise, target platform, and performance requirements. All stacks below are viable for a 2D engine; the trade-offs differ.</p>
+
+      <div class="stack-grid">
+        <div class="stack-card" style="border-top:2px solid var(--indigo)">
+          <div class="stack-head">
+            <span class="stack-name">C++</span>
+            <div>
+              <span class="stack-badge" style="background:rgba(108,138,255,.15);color:var(--indigo)">Industry Default</span>
+              <div class="stars" style="margin-top:6px;justify-content:flex-end">
+                <span class="star-full">★</span><span class="star-full">★</span><span class="star-full">★</span><span class="star-full">★</span><span class="star-full">★</span>
+              </div>
+            </div>
+          </div>
+          <p class="stack-desc">Maximum control over memory layout. Zero-cost abstractions. Largest game-specific library ecosystem. Most shipped engines (Godot, Unreal) use C++.</p>
+          <div class="stack-libs">
+            <div class="stack-lib"><span class="sl-cat">Window</span><span class="sl-val">SDL3 / GLFW</span></div>
+            <div class="stack-lib"><span class="sl-cat">Render</span><span class="sl-val">OpenGL / Vulkan</span></div>
+            <div class="stack-lib"><span class="sl-cat">ECS</span><span class="sl-val">EnTT / flecs</span></div>
+            <div class="stack-lib"><span class="sl-cat">Physics</span><span class="sl-val">Box2D</span></div>
+            <div class="stack-lib"><span class="sl-cat">Audio</span><span class="sl-val">miniaudio</span></div>
+            <div class="stack-lib"><span class="sl-cat">Script</span><span class="sl-val">Lua + sol2</span></div>
+            <div class="stack-lib"><span class="sl-cat">Debug</span><span class="sl-val">Dear ImGui</span></div>
+            <div class="stack-lib"><span class="sl-cat">Build</span><span class="sl-val">CMake 3.25+</span></div>
+          </div>
+          <div class="verdict-bar"><strong>Verdict:</strong> Build here unless there is a strong reason not to. Largest library surface, best hiring, most documentation.</div>
+        </div>
+
+        <div class="stack-card" style="border-top:2px solid var(--amber)">
+          <div class="stack-head">
+            <span class="stack-name">Rust</span>
+            <div>
+              <span class="stack-badge" style="background:rgba(245,158,11,.15);color:var(--amber)">Modern / Safe</span>
+              <div class="stars" style="margin-top:6px;justify-content:flex-end">
+                <span class="star-full">★</span><span class="star-full">★</span><span class="star-full">★</span><span class="star-full">★</span><span class="star-full">★</span>
+              </div>
+            </div>
+          </div>
+          <p class="stack-desc">C++-level performance with compile-time memory safety. Borrow checker eliminates data races. Bevy is the most architecturally innovative open-source engine to study.</p>
+          <div class="stack-libs">
+            <div class="stack-lib"><span class="sl-cat">Window</span><span class="sl-val">winit</span></div>
+            <div class="stack-lib"><span class="sl-cat">Render</span><span class="sl-val">wgpu</span></div>
+            <div class="stack-lib"><span class="sl-cat">ECS</span><span class="sl-val">bevy_ecs / hecs</span></div>
+            <div class="stack-lib"><span class="sl-cat">Physics</span><span class="sl-val">rapier2d</span></div>
+            <div class="stack-lib"><span class="sl-cat">Audio</span><span class="sl-val">kira / rodio</span></div>
+            <div class="stack-lib"><span class="sl-cat">Math</span><span class="sl-val">glam (SIMD)</span></div>
+            <div class="stack-lib"><span class="sl-cat">Debug</span><span class="sl-val">egui</span></div>
+            <div class="stack-lib"><span class="sl-cat">Build</span><span class="sl-val">Cargo</span></div>
+          </div>
+          <div class="verdict-bar"><strong>Verdict:</strong> Best WASM story. Real memory-safety advantage on large codebases. Learning curve real.</div>
+        </div>
+
+        <div class="stack-card" style="border-top:2px solid var(--teal)">
+          <div class="stack-head">
+            <span class="stack-name">TypeScript</span>
+            <div>
+              <span class="stack-badge" style="background:rgba(45,212,191,.15);color:var(--teal)">Browser First</span>
+              <div class="stars" style="margin-top:6px;justify-content:flex-end">
+                <span class="star-full">★</span><span class="star-full">★</span><span class="star-full">★</span><span class="star-empty">★</span><span class="star-empty">★</span>
+              </div>
+            </div>
+          </div>
+          <p class="stack-desc">Mandatory for browser targets. WebGPU is the modern GPU API replacing WebGL. For performance-critical subsystems, compile C++/Rust to WASM.</p>
+          <div class="stack-libs">
+            <div class="stack-lib"><span class="sl-cat">Render</span><span class="sl-val">WebGPU / PixiJS</span></div>
+            <div class="stack-lib"><span class="sl-cat">Framework</span><span class="sl-val">Phaser 3</span></div>
+            <div class="stack-lib"><span class="sl-cat">ECS</span><span class="sl-val">bitecs</span></div>
+            <div class="stack-lib"><span class="sl-cat">Physics</span><span class="sl-val">Rapier (WASM)</span></div>
+            <div class="stack-lib"><span class="sl-cat">Audio</span><span class="sl-val">Web Audio API</span></div>
+            <div class="stack-lib"><span class="sl-cat">Build</span><span class="sl-val">Vite / esbuild</span></div>
+          </div>
+          <div class="verdict-bar"><strong>Verdict:</strong> Mandatory for browser. GC pauses limit performance ceiling — use WASM for hot path.</div>
+        </div>
+
+        <div class="stack-card" style="border-top:2px solid var(--purple)">
+          <div class="stack-head">
+            <span class="stack-name">C#</span>
+            <div>
+              <span class="stack-badge" style="background:rgba(167,139,250,.15);color:var(--purple)">Unity-Adjacent</span>
+              <div class="stars" style="margin-top:6px;justify-content:flex-end">
+                <span class="star-full">★</span><span class="star-full">★</span><span class="star-full">★</span><span class="star-full">★</span><span class="star-empty">★</span>
+              </div>
+            </div>
+          </div>
+          <p class="stack-desc">.NET 8 AOT compilation closes much of the performance gap. Large Unity-trained hiring pool. MonoGame (XNA successor) provides a lean engine framework.</p>
+          <div class="stack-libs">
+            <div class="stack-lib"><span class="sl-cat">Framework</span><span class="sl-val">MonoGame / Nez</span></div>
+            <div class="stack-lib"><span class="sl-cat">Render</span><span class="sl-val">Silk.NET</span></div>
+            <div class="stack-lib"><span class="sl-cat">ECS</span><span class="sl-val">Arch ECS</span></div>
+            <div class="stack-lib"><span class="sl-cat">Physics</span><span class="sl-val">Aether.Physics2D</span></div>
+            <div class="stack-lib"><span class="sl-cat">Build</span><span class="sl-val">dotnet CLI</span></div>
+            <div class="stack-lib"><span class="sl-cat">Script</span><span class="sl-val">Roslyn API</span></div>
+          </div>
+          <div class="verdict-bar"><strong>Verdict:</strong> Excellent if hiring from the Unity ecosystem. MonoGame + Arch ECS is a capable 2D foundation.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════
+         PART III — TEAM CONCERNS
+    ════════════════════════════════════════════════════ -->
+    <div style="margin-top:64px;padding-top:32px;border-top:1px solid var(--border)">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin-bottom:6px">Part III</div>
+      <div style="font-family:'Fraunces',serif;font-size:32px;font-weight:700;color:#fff;margin-bottom:8px">Team Concerns — <span style="color:var(--amber)">Deep Dives</span></div>
+      <p style="max-width:560px;margin-bottom:0">Five concerns raised during planning. Each is analysed with its root risk, concrete mitigations, and code-level guidance.</p>
+    </div>
+
+    <!-- ── Concern 1: Graphics API ──────────────────── -->
+    <section id="c-graphicsapi" class="section">
+      <div class="section-header">
+        <span class="section-num">⚠ 4.1</span>
+        <h2 class="section-title" style="color:var(--amber)">Graphics API <span style="color:var(--muted);font-size:18px;font-weight:400">— Selection & Lock-in</span></h2>
+      </div>
+      <div class="concern-box">
+        <div class="cb-label">Team concern — verbatim</div>
+        <p>"Which graphics API do we commit to, and are we locking ourselves in if we pick the wrong one early?"</p>
+      </div>
+
+      <h3 class="sub-head">Root risk</h3>
+      <p>Choosing Vulkan too early adds months of driver, synchronisation, and memory-management work before a single sprite appears on screen. Choosing OpenGL legacy limits future platform options (macOS caps at 4.1). Choosing a high-level abstraction (bgfx) hides important concepts from the team.</p>
+
+      <h3 class="sub-head">The RHI solution</h3>
+      <p>Design a thin <strong>Rendering Hardware Interface (RHI)</strong> — a pure-virtual abstraction that all rendering code calls. Concrete implementations sit behind it: one for OpenGL, one for Vulkan later. The two-day cost of building the RHI in Phase 1 buys a backend swap at any time for free.</p>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-lang">C++ — interface</span><span class="code-title">Minimal RHI abstraction</span></div>
+        <div class="code-body">
+<span class="k">class</span> <span class="t">IRHI</span> <span class="op">{</span>
+<span class="k">public</span><span class="op">:</span>
+    <span class="k">virtual</span> <span class="t">TextureHandle</span> <span class="fn">CreateTexture</span><span class="op">(</span><span class="k">const</span> <span class="t">TextureDesc</span><span class="op">&</span> <span class="plain">desc</span><span class="op">) =</span> <span class="n">0</span><span class="op">;</span>
+    <span class="k">virtual</span> <span class="t">BufferHandle</span>  <span class="fn">CreateBuffer</span><span class="op">(</span><span class="k">const</span>  <span class="t">BufferDesc</span><span class="op">&</span>  <span class="plain">desc</span><span class="op">) =</span> <span class="n">0</span><span class="op">;</span>
+    <span class="k">virtual</span> <span class="k">void</span>          <span class="fn">SetShader</span><span class="op">(</span><span class="t">ShaderHandle</span> <span class="plain">shader</span><span class="op">)         =</span> <span class="n">0</span><span class="op">;</span>
+    <span class="k">virtual</span> <span class="k">void</span>          <span class="fn">DrawIndexed</span><span class="op">(</span><span class="t">uint32_t</span> <span class="plain">count</span><span class="op">)             =</span> <span class="n">0</span><span class="op">;</span>
+    <span class="k">virtual</span> <span class="k">void</span>          <span class="fn">Present</span><span class="op">()                                =</span> <span class="n">0</span><span class="op">;</span>
+<span class="op">};</span>
+
+<span class="c">// Concrete backend — game code never sees this:</span>
+<span class="k">class</span> <span class="t">OpenGLRHI</span> <span class="op">:</span> <span class="k">public</span> <span class="t">IRHI</span> <span class="op">{</span> <span class="c">/* ... */</span> <span class="op">};</span>
+<span class="k">class</span> <span class="t">VulkanRHI</span>  <span class="op">:</span> <span class="k">public</span> <span class="t">IRHI</span> <span class="op">{</span> <span class="c">/* swap in at Week 20 if needed */</span> <span class="op">};</span>
+        </div>
+      </div>
+
+      <ul class="mitigation-list">
+        <li><strong>OpenGL 4.6 core profile to start.</strong> Well-documented, runs on all desktop hardware, great tooling (RenderDoc). No legacy cruft from core profile.</li>
+        <li><strong>RHI interface from day one.</strong> ~2 days of overhead in Phase 1. Eliminates the cost of a future backend swap entirely.</li>
+        <li><strong>Formal Vulkan decision gate at Week 19.</strong> Run RenderDoc and Tracy. Is the OpenGL submission overhead actually a bottleneck under your target load? Evidence-based, not preference-based.</li>
+        <li><strong>macOS consideration.</strong> macOS supports OpenGL only to 4.1. Use Metal via MoltenVK if you need 4.6 features. Validate all shaders at 4.1 feature level from the start in CI.</li>
+        <li><strong>References: bgfx, sokol_gfx.</strong> Study these for what a production multi-backend RHI looks like. Do not adopt them wholesale — build a minimal one custom to your needs.</li>
+      </ul>
+    </section>
+
+    <!-- ── Concern 2: Multithreading ─────────────────── -->
+    <section id="c-threading" class="section">
+      <div class="section-header">
+        <span class="section-num">⚠ 4.2</span>
+        <h2 class="section-title" style="color:var(--amber)">Multithreading <span style="color:var(--muted);font-size:18px;font-weight:400">— Model & Safety</span></h2>
+      </div>
+      <div class="concern-box">
+        <div class="cb-label">Team concern — verbatim</div>
+        <p>"We don't want to build single-threaded and have to retrofit threading later. But we also don't want threading bugs to block early iteration."</p>
+      </div>
+
+      <h3 class="sub-head">Threading introduction schedule</h3>
+      <table class="data-table">
+        <thead><tr><th>Thread</th><th>Introduced</th><th>Owns</th><th>Communicates via</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Main / Logic</strong></td><td><code>Phase 1</code></td>
+            <td>ECS update, input, AI, physics, scene</td>
+            <td>Single-threaded — direct calls</td>
+          </tr>
+          <tr>
+            <td><strong>Render thread</strong></td><td><code>Phase 2</code></td>
+            <td>All GPU state, all RHI calls, framebuffer</td>
+            <td>Double-buffered RenderCommandBuffer</td>
+          </tr>
+          <tr>
+            <td><strong>Job pool</strong></td><td><code>Phase 3</code></td>
+            <td>Parallel ECS systems, pathfinding, AI</td>
+            <td>Component access declarations → scheduler graph</td>
+          </tr>
+          <tr>
+            <td><strong>Streaming thread</strong></td><td><code>Phase 4</code></td>
+            <td>Async asset decode, texture staging</td>
+            <td>Lock-free request queue → completion poll</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-lang">C++</span><span class="code-title">Render thread command buffer pattern</span></div>
+        <div class="code-body">
+<span class="c">// Main thread writes commands; render thread consumes them.</span>
+<span class="c">// No shared mutable GPU state between threads — ever.</span>
+
+<span class="k">struct</span> <span class="t">DrawSpriteCmd</span> <span class="op">{</span>
+    <span class="t">TextureHandle</span> <span class="plain">texture</span><span class="op">;</span>
+    <span class="t">glm::mat4</span>     <span class="plain">transform</span><span class="op">;</span>
+    <span class="t">glm::vec4</span>     <span class="plain">tint</span><span class="op">;</span>
+<span class="op">};</span>
+
+<span class="c">// Main thread (game logic):</span>
+<span class="k">void</span> <span class="fn">SpriteRenderSystem</span><span class="op">(</span><span class="t">RenderCommandBuffer</span><span class="op">&</span> <span class="plain">cmd_buf</span><span class="op">) {</span>
+    <span class="plain">cmd_buf</span><span class="op">.</span><span class="fn">push</span><span class="op">(</span><span class="t">DrawSpriteCmd</span><span class="op">{</span><span class="plain">tex</span><span class="op">,</span> <span class="plain">xfm</span><span class="op">,</span> <span class="plain">tint</span><span class="op">});</span>  <span class="c">// write-only</span>
+<span class="op">}</span>
+
+<span class="c">// Render thread consumes — never calls back into game code:</span>
+<span class="k">void</span> <span class="fn">RenderThread</span><span class="op">(</span><span class="t">RenderCommandBuffer</span><span class="op">&</span> <span class="plain">cmd_buf</span><span class="op">) {</span>
+    <span class="fn">assert_is_render_thread</span><span class="op">();</span>      <span class="c">// enforce in debug builds</span>
+    <span class="k">for</span> <span class="op">(</span><span class="k">auto</span><span class="op">&</span> <span class="plain">cmd</span> <span class="op">:</span> <span class="plain">cmd_buf</span><span class="op">)</span> <span class="fn">rhi</span><span class="op">.</span><span class="fn">execute</span><span class="op">(</span><span class="plain">cmd</span><span class="op">);</span>
+<span class="op">}</span>
+        </div>
+      </div>
+
+      <ul class="mitigation-list">
+        <li><strong>The GPU thread owns all GPU resources.</strong> No other thread may call RHI functions. Enforce this with thread-ID assertions (<code>assert(get_thread_id() == render_thread_id)</code>) in debug builds — violations become immediate crashes, not silent corruption.</li>
+        <li><strong>ThreadSanitizer (TSan) in CI from Phase 2 onward.</strong> Run the full test suite under TSan on every PR. Data races surface immediately. Do not defer — a race condition found in Phase 4 costs 10× more to fix than one found in Phase 2.</li>
+        <li><strong>Lock-free queue for streaming.</strong> The streaming thread and main thread communicate via a lock-free MPSC queue. The main thread polls for completions; it never blocks waiting for an asset.</li>
+        <li><strong>enkiTS or std::thread.</strong> For the job pool, enkiTS is a lightweight, header-only task scheduler worth evaluating. If you roll your own, keep it simple: a fixed thread count, a concurrent work queue, and a dependency counter per task.</li>
+      </ul>
+    </section>
+
+    <!-- ── Concern 3: Layering ───────────────────────── -->
+    <section id="c-layering" class="section">
+      <div class="section-header">
+        <span class="section-num">⚠ 4.3</span>
+        <h2 class="section-title" style="color:var(--amber)">Layering <span style="color:var(--muted);font-size:18px;font-weight:400">— Enforcing Boundaries</span></h2>
+      </div>
+      <div class="concern-box">
+        <div class="cb-label">Team concern — verbatim</div>
+        <p>"How do we prevent every system from depending on every other system? We've seen this cause spaghetti in past projects."</p>
+      </div>
+
+      <h3 class="sub-head">What spaghetti looks like in practice</h3>
+      <div class="card-grid g3" style="margin-bottom:20px">
+        <div class="card card-accent red">
+          <h4>Renderer reads from ECS</h4>
+          <p>The renderer directly queries entity components instead of reading a command buffer. Now Renderer depends on ECS — a Core system depends on an ECS concept. The layer cake collapses.</p>
+        </div>
+        <div class="card card-accent red">
+          <h4>Physics spawns entities</h4>
+          <p>The physics resolution code creates a spark entity when objects collide. Now Physics depends on the ECS entity factory. Two Core systems are coupled. Neither can be tested in isolation.</p>
+        </div>
+        <div class="card card-accent red">
+          <h4>Game code calls OpenGL</h4>
+          <p>A script calls <code>glBlendFunc</code> to add a particle effect. Now game code depends directly on the GPU API. Porting to Vulkan or WASM requires touching every script that does this.</p>
+        </div>
+      </div>
+
+      <ul class="mitigation-list">
+        <li><strong>Separate CMake library targets per layer.</strong> <code>Platform</code>, <code>Core</code>, <code>ECS</code>, <code>Game</code> are four separate CMake static libraries. <code>Core</code>'s <code>CMakeLists.txt</code> does not list <code>ECS</code> in its <code>target_link_libraries</code>. Cross-layer violations fail at link time — not compile time, not review time.</li>
+        <li><strong>Event bus as the only upward channel.</strong> When Physics needs to tell Game that a collision occurred, it emits a <code>CollisionEvent</code> to the bus. Game code subscribes. Physics never holds a pointer to any game object.</li>
+        <li><strong>Quarterly graphviz review.</strong> Run <code>cmake --graphviz=deps.dot build/</code> and render it. If any arrow points upward through the layer hierarchy, that is a bug in the architecture — fix it before it multiplies.</li>
+        <li><strong>Forward declarations, not includes.</strong> Never <code>#include</code> a higher-layer header from a lower-layer module. If you need a type from above, forward-declare it. If you can't forward-declare it, you have a design problem.</li>
+      </ul>
+    </section>
+
+    <!-- ── Concern 4: Garbage Collectors ────────────── -->
+    <section id="c-gc" class="section">
+      <div class="section-header">
+        <span class="section-num">⚠ 4.4</span>
+        <h2 class="section-title" style="color:var(--amber)">Garbage Collectors <span style="color:var(--muted);font-size:18px;font-weight:400">— Pauses & Memory</span></h2>
+      </div>
+      <div class="concern-box">
+        <div class="cb-label">Team concern — verbatim</div>
+        <p>"If we bind a scripting language with a GC (Lua, Python), will GC pauses kill our frame timing? And how do we handle C++ memory without leaks?"</p>
+      </div>
+
+      <h3 class="sub-head">Scripting layer GC risk</h3>
+      <div class="card-grid g2" style="margin-bottom:20px">
+        <div class="card card-accent amber">
+          <h4>Lua 5.4 — tunable incremental GC</h4>
+          <p>Lua's GC is incremental and tunable. The risk is real if scripts allocate per-frame (creating tables, closures, string concatenations inside <code>update()</code>).</p>
+          <div class="tags"><span class="tag tag-g">Low risk if rules followed</span></div>
+        </div>
+        <div class="card card-accent red">
+          <h4>Python — reference counter + cyclic GC</h4>
+          <p>CPython's reference counter runs continuously but its cyclic GC can pause. Python should only be used for editor tooling, not the shipped game loop — the GC issue is irrelevant at runtime.</p>
+          <div class="tags"><span class="tag tag-r">Runtime: avoid. Tooling: fine.</span></div>
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-lang">C++ / Lua</span><span class="code-title">Tuning Lua GC for real-time use</span></div>
+        <div class="code-body">
+<span class="c">// Tune Lua GC at engine startup:</span>
+<span class="fn">lua_gc</span><span class="op">(</span><span class="plain">L</span><span class="op">,</span> <span class="plain">LUA_GCSETSTEPMUL</span><span class="op">,</span>  <span class="n">100</span><span class="op">);</span>  <span class="c">// GC step size (lower = smaller pauses)</span>
+<span class="fn">lua_gc</span><span class="op">(</span><span class="plain">L</span><span class="op">,</span> <span class="plain">LUA_GCSETPAUSE</span><span class="op">,</span>    <span class="n">200</span><span class="op">);</span>  <span class="c">// GC pause threshold (higher = rarer)</span>
+
+<span class="c">// Force a full collect ONLY during scene transitions:</span>
+<span class="k">void</span> <span class="fn">OnSceneUnload</span><span class="op">() {</span>
+    <span class="fn">lua_gc</span><span class="op">(</span><span class="plain">L</span><span class="op">,</span> <span class="plain">LUA_GCCOLLECT</span><span class="op">,</span> <span class="n">0</span><span class="op">);</span>  <span class="c">// safe — screen is black anyway</span>
+<span class="op">}</span>
+
+<span class="c">// THE RULE: No Lua allocations inside update().</span>
+<span class="c">// All tables and closures are created in init() and reused.</span>
+<span class="c">// update() only mutates pre-allocated data.</span>
+        </div>
+      </div>
+
+      <h3 class="sub-head">C++ engine memory strategy</h3>
+      <ul class="mitigation-list">
+        <li><strong>No raw new/delete in engine code.</strong> Use <code>std::unique_ptr</code> at allocation sites and <code>std::shared_ptr</code> only at actual shared-ownership boundaries. Smart pointers give you deterministic cleanup without a GC.</li>
+        <li><strong>Frame allocator for hot path.</strong> Allocate a 16 MB arena at startup. Each frame: a bump pointer starts at the arena base. Allocations just increment the pointer. At end-of-frame: reset the pointer. Zero fragmentation, zero individual frees, zero malloc overhead on the hot path.</li>
+        <li><strong>Intrusive ref-count for asset handles.</strong> <code>std::shared_ptr</code> has two heap allocations (object + control block). For 10,000 asset handles on the render path, this matters. Use an intrusive ref-count embedded in the asset struct — one allocation, one pointer, deterministic deallocation.</li>
+        <li><strong>ASan + UBSan in CI from day one.</strong> Every PR runs with AddressSanitizer and UndefinedBehaviourSanitizer. Double-frees, use-after-free, and buffer overflows surface as immediate test failures, not silent corruption discovered six months later.</li>
+        <li><strong>Heaptrack audit at Week 22.</strong> Run Heaptrack (Linux) or Massif (Valgrind) under full game load. Confirm: zero heap allocations per frame on the main thread. All hot-path memory comes from arenas or pre-allocated pools.</li>
+      </ul>
+    </section>
+
+    <!-- ── Concern 5: Shaders ────────────────────────── -->
+    <section id="c-shaders" class="section">
+      <div class="section-header">
+        <span class="section-num">⚠ 4.5</span>
+        <h2 class="section-title" style="color:var(--amber)">Shaders <span style="color:var(--muted);font-size:18px;font-weight:400">— Pipeline & Team Access</span></h2>
+      </div>
+      <div class="concern-box">
+        <div class="cb-label">Team concern — verbatim</div>
+        <p>"Shaders are a black box for half the team. How do we structure the shader pipeline so engine and graphics programmers don't block each other?"</p>
+      </div>
+
+      <h3 class="sub-head">Phased shader system — no bottleneck</h3>
+      <table class="data-table">
+        <thead><tr><th>Phase</th><th>Feature</th><th>Owner</th><th>What it unlocks</th></tr></thead>
+        <tbody>
+          <tr><td><code>1</code></td><td><strong>Hard-coded sprite shader</strong></td><td>Graphics lead</td><td>Sprite on screen. No abstraction — keep it simple.</td></tr>
+          <tr><td><code>2</code></td><td><strong>ShaderLibrary</strong></td><td>Engine team</td><td>Named map of compiled programs. Hot-reload on file change in debug builds.</td></tr>
+          <tr><td><code>3</code></td><td><strong>Material system</strong></td><td>Engine team</td><td>Material = (ShaderHandle, UniformMap). Game code creates materials; engine manages GPU state.</td></tr>
+          <tr><td><code>4</code></td><td><strong>Permutation system</strong></td><td>Graphics team</td><td>Variants via #define injection at load. NO_LIGHTING, POINT_LIGHT, NORMAL_MAP — no runtime branching.</td></tr>
+          <tr><td><code>4</code></td><td><strong>Post-processing pipeline</strong></td><td>Graphics team</td><td>Composable passes: bloom → chromatic aberration → colour grade. Each pass reads/writes RenderTarget.</td></tr>
+        </tbody>
+      </table>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-lang">GLSL + C++</span><span class="code-title">Shader permutation via define injection</span></div>
+        <div class="code-body">
+<span class="c">// ShaderKey encodes which variant to compile:</span>
+<span class="k">struct</span> <span class="t">ShaderKey</span> <span class="op">{</span>
+    <span class="t">bool</span> <span class="plain">lighting</span>   <span class="op">=</span> <span class="k">false</span><span class="op">;</span>
+    <span class="t">bool</span> <span class="plain">normal_map</span> <span class="op">=</span> <span class="k">false</span><span class="op">;</span>
+    <span class="t">bool</span> <span class="plain">outline</span>    <span class="op">=</span> <span class="k">false</span><span class="op">;</span>
+<span class="op">};</span>
+
+<span class="c">// Engine prepends #defines to the GLSL source at load time:</span>
+<span class="t">std::string</span> <span class="fn">build_preamble</span><span class="op">(</span><span class="t">ShaderKey</span> <span class="plain">key</span><span class="op">) {</span>
+    <span class="t">std::string</span> <span class="plain">p</span> <span class="op">=</span> <span class="s">"#version 460 core\n"</span><span class="op">;</span>
+    <span class="k">if</span> <span class="op">(</span><span class="plain">key</span><span class="op">.</span><span class="plain">lighting</span><span class="op">)</span>   <span class="plain">p</span> <span class="op">+=</span> <span class="s">"#define USE_LIGHTING\n"</span><span class="op">;</span>
+    <span class="k">if</span> <span class="op">(</span><span class="plain">key</span><span class="op">.</span><span class="plain">normal_map</span><span class="op">)</span> <span class="plain">p</span> <span class="op">+=</span> <span class="s">"#define USE_NORMAL_MAP\n"</span><span class="op">;</span>
+    <span class="k">if</span> <span class="op">(</span><span class="plain">key</span><span class="op">.</span><span class="plain">outline</span><span class="op">)</span>    <span class="plain">p</span> <span class="op">+=</span> <span class="s">"#define USE_OUTLINE\n"</span><span class="op">;</span>
+    <span class="k">return</span> <span class="plain">p</span><span class="op">;</span>
+<span class="op">}</span>
+
+<span class="c">// shader.glsl uses #ifdef — one source file, N variants, no runtime branching:</span>
+<span class="c">// #ifdef USE_LIGHTING  ... apply 2D light ... #endif</span>
+        </div>
+      </div>
+
+      <ul class="mitigation-list">
+        <li><strong>ShaderLibrary owned by the render thread.</strong> The main thread enqueues a hot-reload request via the command buffer. The render thread picks it up between frames and recompiles. Game code is never blocked.</li>
+        <li><strong>Material system separates concerns cleanly.</strong> Engine programmers implement the uniform-binding and state-management infrastructure. Graphics programmers write GLSL files and create material assets. Neither team blocks the other.</li>
+        <li><strong>Offline compilation in release builds.</strong> Cache compiled shader binaries on disk. Binary is keyed by source hash — stale cache auto-invalidates. Eliminates per-launch compilation stall for end users. Hot-reload disabled in release.</li>
+        <li><strong>Variant explosion guard.</strong> Document the maximum variant count per shader (e.g. max 8 permutations of the sprite shader). Beyond 8, the number of compiled programs grows exponentially. Set the limit in Phase 4 before the shader library gets large.</li>
+      </ul>
+    </section>
+
+    <!-- ═══ SECTION: ADR Log ══════════════════════════ -->
+    <section id="adr" class="section">
+      <div class="section-header">
+        <span class="section-num">§ 5.1</span>
+        <h2 class="section-title">Architecture <span class="accent">Decision Log</span></h2>
+      </div>
+      <p>These five decisions are finalised in Phase 1 (Week 4). Changes after Phase 2 carry extreme rework cost. Each maps directly to a team concern.</p>
+
+      <div class="adr-table">
+        <div class="adr-row">
+          <div><div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--dim);margin-bottom:4px">ADR-01 · Graphics API</div><div class="adr-decision">OpenGL 4.6 behind RHI</div></div>
+          <div><div style="font-size:11px;color:var(--dim);margin-bottom:4px;font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.06em">Decision</div><div class="adr-choice">OpenGL 4.6 core profile behind a thin RHI interface. Vulkan migration decision gate at Week 19 backed by profiling evidence.</div></div>
+          <div><div style="font-size:11px;color:var(--dim);margin-bottom:4px;font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.06em">Alternatives</div><div class="adr-alt">Vulkan from day 1 / bgfx / sokol_gfx</div></div>
+        </div>
+        <div class="adr-row">
+          <div><div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--dim);margin-bottom:4px">ADR-02 · Threading</div><div class="adr-decision">Phased thread model</div></div>
+          <div><div style="font-size:11px;color:var(--dim);margin-bottom:4px;font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.06em">Decision</div><div class="adr-choice">Phase 1: single thread. Phase 2: render thread + command buffer. Phase 3: job pool. Phase 4: streaming thread. TSan in CI from Phase 2.</div></div>
+          <div><div style="font-size:11px;color:var(--dim);margin-bottom:4px;font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.06em">Alternatives</div><div class="adr-alt">Full multi-thread from day 1 / actor model</div></div>
+        </div>
+        <div class="adr-row">
+          <div><div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--dim);margin-bottom:4px">ADR-03 · Layering</div><div class="adr-decision">5-layer + CMake enforcement</div></div>
+          <div><div style="font-size:11px;color:var(--dim);margin-bottom:4px;font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.06em">Decision</div><div class="adr-choice">Five named layers. Each is a separate CMake target. Cross-layer violations fail at link time. Event bus is the sole upward communication channel.</div></div>
+          <div><div style="font-size:11px;color:var(--dim);margin-bottom:4px;font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.06em">Alternatives</div><div class="adr-alt">Flat module structure / namespace-only separation</div></div>
+        </div>
+        <div class="adr-row">
+          <div><div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--dim);margin-bottom:4px">ADR-04 · Memory</div><div class="adr-decision">Frame allocator + smart pointers</div></div>
+          <div><div style="font-size:11px;color:var(--dim);margin-bottom:4px;font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.06em">Decision</div><div class="adr-choice">Frame linear allocator for hot path. Intrusive ref-count for asset handles. No raw new/delete. ASan + UBSan in CI from day one.</div></div>
+          <div><div style="font-size:11px;color:var(--dim);margin-bottom:4px;font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.06em">Alternatives</div><div class="adr-alt">std::shared_ptr everywhere / jemalloc</div></div>
+        </div>
+        <div class="adr-row">
+          <div><div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--dim);margin-bottom:4px">ADR-05 · Shaders</div><div class="adr-decision">Phased shader system</div></div>
+          <div><div style="font-size:11px;color:var(--dim);margin-bottom:4px;font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.06em">Decision</div><div class="adr-choice">Phase 1: hard-coded. Phase 2: ShaderLibrary. Phase 3: Material system. Phase 4: permutations + post-processing pipeline.</div></div>
+          <div><div style="font-size:11px;color:var(--dim);margin-bottom:4px;font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.06em">Alternatives</div><div class="adr-alt">SPIR-V + shader graph from day 1</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ SECTION: Glossary ═════════════════════════ -->
+    <section id="glossary" class="section">
+      <div class="section-header">
+        <span class="section-num">§ 5.2</span>
+        <h2 class="section-title">Glossary</h2>
+      </div>
+      <table class="data-table">
+        <thead><tr><th>Term</th><th>Definition</th></tr></thead>
+        <tbody>
+          <tr><td><code>ADR</code></td><td>Architecture Decision Record — a short document recording a significant technical decision and its rationale.</td></tr>
+          <tr><td><code>alpha</code></td><td>The interpolation factor (accumulator / fixed_dt) passed to the renderer to smooth object positions between physics ticks.</td></tr>
+          <tr><td><code>ASan</code></td><td>AddressSanitizer — a compiler instrumentation tool that detects memory errors (use-after-free, buffer overrun) at runtime.</td></tr>
+          <tr><td><code>ECS</code></td><td>Entity-Component-System — entities are IDs, components are data, systems contain all logic. No OOP inheritance.</td></tr>
+          <tr><td><code>Frame allocator</code></td><td>A linear bump allocator reset at the end of each frame. Zero fragmentation, zero individual frees on the hot path.</td></tr>
+          <tr><td><code>RHI</code></td><td>Rendering Hardware Interface — a thin abstraction over a specific GPU API (OpenGL, Vulkan). Game code never calls the GPU directly.</td></tr>
+          <tr><td><code>SAT</code></td><td>Separating Axis Theorem — a narrowphase algorithm that tests convex polygon intersection by checking if any axis exists that separates the two shapes.</td></tr>
+          <tr><td><code>Shader permutation</code></td><td>A compiled variant of a shader produced by injecting #define flags at load time. Avoids runtime branching in GLSL.</td></tr>
+          <tr><td><code>Spiral of death</code></td><td>The fixed-timestep loop failure mode where each physics tick takes longer than fixed_dt, causing the accumulator to grow infinitely.</td></tr>
+          <tr><td><code>TSan</code></td><td>ThreadSanitizer — detects data races at runtime. Run in CI from the moment multithreading is introduced.</td></tr>
+          <tr><td><code>UBSan</code></td><td>UndefinedBehaviourSanitizer — detects C++ undefined behaviour (signed overflow, null deref, misaligned access) at runtime.</td></tr>
+          <tr><td><code>Z-sorting</code></td><td>Sorting draw calls by depth layer and Y-position within a layer to determine render order of overlapping sprites.</td></tr>
+        </tbody>
+      </table>
+
+      <div style="margin-top:48px;padding:24px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);text-align:center">
+        <div style="font-family:'Fraunces',serif;font-size:18px;color:var(--muted);margin-bottom:6px;font-style:italic">"Build the loop first. Draw a sprite. Move it.</div>
+        <div style="font-family:'Fraunces',serif;font-size:18px;color:var(--muted);font-style:italic">Ship something playable before building the editor."</div>
+        <div style="margin-top:12px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--dim)">— Game Engine Architecture (J. Gregory) &amp; Game Programming Patterns (R. Nystrom)</div>
+      </div>
+    </section>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// Highlight active nav link on scroll
+const sections = document.querySelectorAll('section[id]');
+const navLinks  = document.querySelectorAll('.nav-link');
+
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      navLinks.forEach(a => a.classList.remove('active'));
+      const active = document.querySelector(`.nav-link[href="#${e.target.id}"]`);
+      if (active) active.classList.add('active');
+    }
+  });
+}, { threshold: 0.25 });
+
+sections.forEach(s => obs.observe(s));
+</script>
+</body>
+</html>
