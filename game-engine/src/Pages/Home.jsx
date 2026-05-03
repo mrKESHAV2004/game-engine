@@ -1,10 +1,12 @@
 import {
   SectionHeader, SubHeading, CodeBlock, Callout,InlineCode,Token,Table,TableHead,TableRow,TableCell,FeatureCard,Badge,ArrowList, ArrowListItem,Paragraph,CheckListItem
 } from '../components/GlobalComponents';
-import { useEffect } from 'react';
+import { Sidebar } from '../components/Navbar';
 
 export default function Home() {
   return (
+    <>
+    <Sidebar/>
     <div className="bg-e-bg text-e-tx font-sans text-[15px] leading-[1.7] flex min-h-screen overflow-x-hidden scroll-smooth">
       {/* Global Custom CSS preserving the pseudo elements and scrollbars */}
       <style>{`
@@ -958,5 +960,7 @@ export default function Home() {
         </div>
       </main>
     </div>
+    </>
+    
   );
 }

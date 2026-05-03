@@ -3,7 +3,7 @@
 // ==========================================
 
 const NavLink = ({ href, icon, text, badge, activeId }) => {
-  const id = href.substring(1); // Remove the '#'
+  const id = href.substring(1);
   const isActive = activeId === id;
   
   return (
@@ -19,23 +19,7 @@ const NavLink = ({ href, icon, text, badge, activeId }) => {
 };
 
 export const Sidebar = ({ activeId }) => (
-  <aside id="sidebar" className="w-[260px] min-h-screen bg-e-bg2 border-r border-e-bd fixed top-0 left-0 flex flex-col z-[100] overflow-y-auto hidden md:flex">
-    <div className="px-5 pt-[22px] pb-[18px] border-b border-e-bd">
-      <div className="flex gap-1.5 mb-3.5">
-        <span className="w-[11px] h-[11px] rounded-full bg-[#ff5f57]"></span>
-        <span className="w-[11px] h-[11px] rounded-full bg-[#ffbd2e]"></span>
-        <span className="w-[11px] h-[11px] rounded-full bg-[#28c840]"></span>
-      </div>
-      <span className="font-mono text-[10px] text-e-teal tracking-[.12em] uppercase mb-1.5 block">Dev Field Notes</span>
-      <h2 className="font-serif text-[17px] font-bold text-e-tx leading-[1.3] lavishly-yours-regular">2D Game Engine</h2>
-    </div>
-
-    <div className="px-5 pt-[18px] pb-1">
-      <div className="font-mono text-[10px] tracking-[.1em] uppercase text-e-dim mb-2">Other Contents</div>
-      <a href="/" className="nav-link flex items-center gap-[9px] px-2.5 py-[7px] rounded-lg text-e-mu no-underline text-[13.5px] font-medium transition-colors mb-px hover:bg-e-bg3 hover:text-e-tx">Fundamentals</a>
-      <a href="/resources" className="nav-link flex items-center gap-[9px] px-2.5 py-[7px] rounded-lg text-e-mu no-underline text-[13.5px] font-medium transition-colors mb-px hover:bg-e-bg3 hover:text-e-tx">Game Engine Resources</a>
-      <a href="/documents" className="nav-link flex items-center gap-[9px] px-2.5 py-[7px] rounded-lg text-e-mu no-underline text-[13.5px] font-medium transition-colors mb-px hover:bg-e-bg3 hover:text-e-tx">Project Documents</a>
-    </div>
+  <aside id="sidebar" className="w-[260px] min-h-screen bg-e-bg2 border-r border-e-bd fixed top-[60px] left-0 flex flex-col z-[100] overflow-y-auto hidden md:flex">
 
     <div className="px-5 pt-[18px] pb-1">
       <div className="font-mono text-[10px] tracking-[.1em] uppercase text-e-dim mb-2">Part I — Fundamentals</div>
@@ -76,3 +60,53 @@ export const Sidebar = ({ activeId }) => (
     </div>
   </aside>
 );
+
+
+export const Navbar = () => {
+  return (
+    <nav className="fixed top-0 left-0 right-0 h-[60px] bg-e-bg2/80 backdrop-blur-sm border-b border-e-bd z-[200] flex items-center justify-between px-6">
+      {/* Left: Terminal Dots + Brand */}
+      <div className="flex items-center gap-4">
+        <div className="flex gap-1.5">
+          <span className="w-3 h-3 rounded-full bg-[#ff5f57] shadow-[0_0_4px_#ff5f57]"></span>
+          <span className="w-3 h-3 rounded-full bg-[#ffbd2e] shadow-[0_0_4px_#ffbd2e]"></span>
+          <span className="w-3 h-3 rounded-full bg-[#28c840] shadow-[0_0_4px_#28c840]"></span>
+        </div>
+
+        <div className="h-4 w-px bg-e-bd"></div>
+
+        <div>
+          <span className="font-mono text-[10px] text-e-teal tracking-[.12em] uppercase">Dev Field Notes</span>
+          <h1 className="font-serif text-[15px] font-bold text-e-tx leading-none lavishly-yours-regular">2D Game Engine</h1>
+        </div>
+      </div>
+
+      {/* Center: Nav Links */}
+      <div className="flex items-center gap-1.5">
+        <a
+          href="/"
+          className="px-3 py-1.5 rounded-md text-e-mu text-[13px] font-medium hover:bg-e-bg3 hover:text-e-tx transition-colors"
+        >
+          Fundamentals
+        </a>
+        <a
+          href="/resources"
+          className="px-3 py-1.5 rounded-md text-e-mu text-[13px] font-medium hover:bg-e-bg3 hover:text-e-tx transition-colors"
+        >
+          Resources
+        </a>
+        <a
+          href="/documents"
+          className="px-3 py-1.5 rounded-md text-e-mu text-[13px] font-medium hover:bg-e-bg3 hover:text-e-tx transition-colors"
+        >
+          Documents
+        </a>
+      </div>
+
+      {/* Right: Meta Info */}
+      <div className="font-mono text-[10px] text-e-dim">
+        rev 2 · 28 weeks
+      </div>
+    </nav>
+  );
+}
