@@ -2,6 +2,8 @@
 // NAVIGATION / SIDEBAR
 // ==========================================
 
+import React, { useState } from 'react';
+
 const NavLink = ({ href, icon, text, badge, activeId }) => {
   const id = href.substring(1);
   const isActive = activeId === id;
@@ -63,64 +65,94 @@ export const Sidebar = ({ activeId }) => (
 
 
 export const Navbar = () => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const links = [
+    { name: 'Fundamentals', href: '/' },
+    { name: 'Resources', href: '/resources' },
+    { name: 'Documents', href: '/documents' },
+  ];
+
   return (
-    <nav className="fixed top-0 left-0 right-0 h-[60px] bg-e-bg2/80 backdrop-blur-sm border-b border-e-bd z-[200] flex items-center justify-between px-4 md:px-6">
-      {/* Left: Terminal Dots + Brand */}
-      <div className="flex items-center gap-2 md:gap-4">
-        <div className="flex gap-1.5">
-          <span className="w-3 h-3 rounded-full bg-[#ff5f57] shadow-[0_0_4px_#ff5f57]"></span>
-          <span className="w-3 h-3 rounded-full bg-[#ffbd2e] shadow-[0_0_4px_#ffbd2e]"></span>
-          <span className="w-3 h-3 rounded-full bg-[#28c840] shadow-[0_0_4px_#28c840]"></span>
+    <>
+      <nav className="fixed top-0 left-0 right-0 h-[60px] bg-e-bg2/80 backdrop-blur-sm border-b border-e-bd z-[200] flex items-center justify-between px-4 md:px-6">
+        {/* Left: Terminal Dots + Brand */}
+        <div className="flex items-center gap-2 md:gap-4">
+          <div className="flex gap-1.5">
+            <span className="w-3 h-3 rounded-full bg-[#ff5f57] shadow-[0_0_4px_#ff5f57]"></span>
+            <span className="w-3 h-3 rounded-full bg-[#ffbd2e] shadow-[0_0_4px_#ffbd2e]"></span>
+            <span className="w-3 h-3 rounded-full bg-[#28c840] shadow-[0_0_4px_#28c840]"></span>
+          </div>
+
+          <div className="h-4 w-px bg-e-bd hidden md:block"></div>
+
+          <div className="hidden md:block">
+            <span className="font-mono text-[10px] text-e-teal tracking-[.12em] uppercase">Dev Field Notes</span>
+            <h1 className="font-serif text-[15px] font-bold text-e-tx leading-none lavishly-yours-regular">2D Game Engine</h1>
+          </div>
+
+          {/* Mobile brand text */}
+          <div className="md:hidden">
+            <h1 className="font-serif text-[14px] font-bold text-e-tx leading-none lavishly-yours-regular">2D Engine</h1>
+          </div>
         </div>
 
-        <div className="h-4 w-px bg-e-bd hidden md:block"></div>
-
-        <div className="hidden md:block">
-          <span className="font-mono text-[10px] text-e-teal tracking-[.12em] uppercase">Dev Field Notes</span>
-          <h1 className="font-serif text-[15px] font-bold text-e-tx leading-none lavishly-yours-regular">2D Game Engine</h1>
+        {/* Center: Nav Links (Desktop) */}
+        <div className="hidden md:flex items-center gap-1.5">
+          {links.map((link) => (
+            <a
+              key={link.name}
+              href={link.href}
+              className="px-3 py-1.5 rounded-md text-e-mu text-[13px] font-medium hover:bg-e-bg3 hover:text-e-tx transition-colors"
+            >
+              {link.name}
+            </a>
+          ))}
         </div>
 
-        {/* Mobile brand text */}
-        <div className="md:hidden">
-          <h1 className="font-serif text-[14px] font-bold text-e-tx leading-none lavishly-yours-regular">2D Engine</h1>
+        {/* Mobile menu button */}
+        <div className="md:hidden flex items-center">
+          <button 
+            onClick={() => setIsOpen(!isOpen)}
+            className="p-2 rounded-md text-e-mu hover:bg-e-bg3 hover:text-e-tx transition-colors"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              {isOpen ? (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+              ) : (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+              )}
+            </svg>
+          </button>
         </div>
-      </div>
 
-      {/* Center: Nav Links */}
-      <div className="hidden md:flex items-center gap-1.5">
-        <a
-          href="/"
-          className="px-3 py-1.5 rounded-md text-e-mu text-[13px] font-medium hover:bg-e-bg3 hover:text-e-tx transition-colors"
-        >
-          Fundamentals
-        </a>
-        <a
-          href="/resources"
-          className="px-3 py-1.5 rounded-md text-e-mu text-[13px] font-medium hover:bg-e-bg3 hover:text-e-tx transition-colors"
-        >
-          Resources
-        </a>
-        <a
-          href="/documents"
-          className="px-3 py-1.5 rounded-md text-e-mu text-[13px] font-medium hover:bg-e-bg3 hover:text-e-tx transition-colors"
-        >
-          Documents
-        </a>
-      </div>
+        {/* Right: Meta Info */}
+        <div className="hidden md:block font-mono text-[10px] text-e-dim">
+          rev 2 · 28 weeks
+        </div>
+      </nav>
 
-      {/* Mobile menu button */}
-      <div className="md:hidden flex items-center">
-        <button className="p-2 rounded-md text-e-mu hover:bg-e-bg3 hover:text-e-tx transition-colors">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
-        </button>
-      </div>
-
-      {/* Right: Meta Info */}
-      <div className="hidden md:block font-mono text-[10px] text-e-dim">
-        rev 2 · 28 weeks
-      </div>
-    </nav>
+      {/* Mobile Menu Overlay */}
+      {isOpen && (
+        <div className="md:hidden fixed inset-0 z-[150] bg-e-bg/95 backdrop-blur-md pt-[60px] animate-fade-up">
+          <div className="flex flex-col p-6 gap-4">
+            <div className="font-mono text-[10px] tracking-[.1em] uppercase text-e-dim mb-2">Navigation</div>
+            {links.map((link) => (
+              <a
+                key={link.name}
+                href={link.href}
+                onClick={() => setIsOpen(false)}
+                className="text-lg font-medium text-e-mu hover:text-e-indigo transition-colors border-b border-e-bd pb-4"
+              >
+                {link.name}
+              </a>
+            ))}
+            <div className="mt-auto pt-8 font-mono text-[10px] text-e-dim">
+              engine_notes.v2.jsx — rev 2<br />28 weeks · 5 phases
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
