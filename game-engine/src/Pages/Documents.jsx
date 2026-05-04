@@ -33,11 +33,11 @@ const Documents = () => {
       icon: "🎥"
     },
     {
-      id: 'arch-ppt',
-      title: "Slide Deck",
+      id: 'arch-pdf',
+      title: "Book",
       description: "Architectural walkthrough presentation slides.",
-      file: "/2D_Game_Engine_Architecture.pptx",
-      type: "Download PPTX",
+      file: "/Game Engine Architecture.pdf",
+      type: "PDF Viewer",
       badgeType: "amber",
       icon: "📊"
     }

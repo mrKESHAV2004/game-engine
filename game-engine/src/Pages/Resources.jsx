@@ -1,308 +1,287 @@
-import React, { useEffect } from "react";
-import { SectionHeader, Paragraph } from "../components/GlobalComponents";
+import React, { useState } from 'react';
+import { SectionHeader,Paragraph,Table,TableHead,TableRow,TableCell } from '../components/GlobalComponents';
 
-const Resources = () => {
-  
 
-  // YouTube resources data
+
+// ==========================================
+// MAIN APP COMPONENT
+// ==========================================
+
+export default function Resources() {
+  const [activeFilter, setActiveFilter] = useState("All");
+
   const youtubeResources = [
     {
       title: "The Cherno — Game Engine Series",
-      description:
-        "190+ episode series building Hazel, a real C++ engine from zero — window, event system, renderer, ECS, scripting layer. The most thorough 'build it yourself' course on YouTube.",
-      tags: ["Renderer", "ECS", "Editor / ImGui", "C++", "OpenGL", "Beginner → Advanced"],
+      description: "190+ episode series building Hazel, a real C++ engine from zero. The most thorough 'build it yourself' course on YouTube.",
+      tags: ["Renderer", "ECS", "C++", "OpenGL"],
       link: "https://www.youtube.com/playlist?list=PLlrATfBNZ98dC-V-N3m0Go4deliWHPFwT",
-      linkText: "youtube.com/playlist ↗",
     },
     {
-      title: "javidx9 (OneLoneCoder) — olcPixelGameEngine",
-      description:
-        "Builds an entire 2D pixel engine from scratch in C++, then uses it to explain game loop, sprites, tilemaps, raycasting, and pathfinding in self-contained videos. Exceptional for understanding 2D internals.",
-      tags: ["2D Renderer", "Physics", "Tilemap", "C++", "Intermediate"],
+      title: "javidx9 — olcPixelGameEngine",
+      description: "Builds a 2D pixel engine from scratch in C++, then uses it to explain game loops, tilemaps, and pathfinding.",
+      tags: ["2D Renderer", "Physics", "C++"],
       link: "https://www.youtube.com/@javidx9",
-      linkText: "youtube.com/@javidx9 ↗",
     },
     {
-      title: "pikuma — '2D Game Engine from Scratch in C++'",
-      description:
-        "Structured course-style playlist covering SDL2 windowing, game loop, ECS design, asset store, event system, collision, and Lua scripting integration — exactly the MVP path for an in-house engine.",
-      tags: ["ECS", "Asset Store", "Lua scripting", "SDL2", "Structured course"],
+      title: "pikuma — 2D Engine from Scratch",
+      description: "Structured course covering SDL2 windowing, game loops, ECS design, and Lua scripting integration.",
+      tags: ["ECS", "Lua scripting", "SDL2"],
       link: "https://www.youtube.com/@pikuma",
-      linkText: "youtube.com/@pikuma ↗",
     },
     {
       title: "Sebastian Lague — Coding Adventures",
-      description:
-        "Deep-dives into specific engine subsystems: procedural terrain, pathfinding, mesh generation, fluid simulation, ray tracing. Each video teaches a concrete system with real source code.",
-      tags: ["Renderer", "Simulation", "Pathfinding", "C# / Unity", "All levels"],
+      description: "Deep-dives into specific engine subsystems: procedural terrain, pathfinding, fluid simulation, and ray tracing.",
+      tags: ["Simulation", "Pathfinding", "C#"],
       link: "https://www.youtube.com/@SebastianLague",
-      linkText: "youtube.com/@SebastianLague ↗",
-    },
-    {
-      title: "ThinMatrix — OpenGL 3D Game Engine in Java",
-      description:
-        "Long-running series building a full engine from LWJGL upward — VAOs, shaders, textures, terrain, water rendering, GUI. Great model for understanding how the rendering pipeline is layered.",
-      tags: ["OpenGL pipeline", "Shaders", "Java / LWJGL", "Intermediate"],
-      link: "https://www.youtube.com/@ThinMatrix",
-      linkText: "youtube.com/@ThinMatrix ↗",
-    },
-    {
-      title: "Game Maker's Toolkit — How Game Engines Work",
-      description:
-        "Design-theory videos explaining how physics, camera systems, animation state machines, and AI work across multiple engines. Essential for understanding the 'why' behind architectural decisions.",
-      tags: ["Physics", "Camera systems", "AI / pathfinding", "Engine-agnostic"],
-      link: "https://www.youtube.com/@GMTK",
-      linkText: "youtube.com/@GMTK ↗",
     },
     {
       title: "Travis Vroman — Kohi Game Engine",
-      description:
-        "Livestream series building a cross-platform C engine from scratch using Vulkan. Covers memory management, platform abstraction, renderer backend abstraction, and the plugin architecture pattern.",
-      tags: ["Vulkan renderer", "Memory mgmt", "C", "Advanced"],
+      description: "Livestream series building a cross-platform C engine from scratch using Vulkan. Covers memory management and plugin architectures.",
+      tags: ["Vulkan", "Memory mgmt", "C"],
       link: "https://www.youtube.com/@TravisVroman",
-      linkText: "youtube.com/@TravisVroman ↗",
-    },
-    {
-      title: "GDQuest — Godot Engine deep dives",
-      description:
-        "Professional-quality Godot tutorials covering its 2D renderer, scene system, signals (event bus), shader graph, and animation player — excellent for studying how a shipped engine exposes these concepts to developers.",
-      tags: ["Scene editor", "2D renderer", "Audio", "GDScript", "Open source"],
-      link: "https://www.youtube.com/@Gdquest",
-      linkText: "youtube.com/@Gdquest ↗",
-    },
-    {
-      title: "Bisqwit — 'Making a NES game' / retro engine building",
-      description:
-        "Fascinating deep-dives into sprite rendering, tile engines, palette systems, and game loop timing from a hardware-level perspective. Unmatched for understanding why 2D engine primitives are designed the way they are.",
-      tags: ["Sprite engine", "Tilemaps", "Hardware-level", "C++", "Advanced"],
-      link: "https://www.youtube.com/@Bisqwit",
-      linkText: "youtube.com/@Bisqwit ↗",
-    },
+    }
   ];
 
-  // GitHub resources data
+  const readingResources = [
+    {
+      title: "How to Become a Game Engine Developer",
+      author: "Harold Serrano",
+      description: "A comprehensive roadmap, architecture overview, and career advice for aspiring engine developers.",
+      link: "https://www.haroldserrano.com/blog/how-to-become-a-game-engine-developer",
+    },
+    {
+      title: "3D Game Shaders for Beginners",
+      author: "Lettier",
+      description: "A brilliant, step-by-step visual guide to understanding and writing 3D graphics shaders from scratch.",
+      link: "https://lettier.github.io/3d-game-shaders-for-beginners/",
+    },
+    {
+      title: "Awesome Game Engine Dev",
+      author: "Stevinz",
+      description: "A massive curated GitHub list of game engine development resources, libraries, frameworks, and articles.",
+      link: "https://github.com/stevinz/awesome-game-engine-dev?tab=readme-ov-file#game-engines",
+    },
+    {
+      title: "Study Game Engines",
+      author: "Open Source Collective",
+      description: "A collaborative repository analyzing the architecture and source code of various open-source game engines.",
+      link: "https://github.com/study-game-engines",
+    }
+  ];
+
   const githubResources = [
-    {
-      title: "godotengine/godot",
-      description:
-        "The gold standard open-source engine. Its 2D renderer is purpose-built (not a scaled 3D pipeline), the scene editor is best-in-class, and its signal system is a clean event bus implementation to study.",
-      tags: ["GUI editor", "Dedicated 2D renderer", "Asset pipeline", "Audio bus", "Physics 2D"],
-      language: "C++",
-      stars: "★ 94k",
-      link: "https://github.com/godotengine/godot",
-    },
-    {
-      title: "bevyengine/bevy",
-      description:
-        "The best reference for a modern ECS-first engine design. Its scheduler (parallel systems, data-driven ordering) and asset system are the most forward-thinking in any open-source engine.",
-      tags: ["ECS architecture", "Asset server", "wgpu renderer", "Hot reload", "WASM target"],
-      language: "Rust",
-      stars: "★ 38k",
-      link: "https://github.com/bevyengine/bevy",
-    },
-    {
-      title: "cocos2d/cocos2d-x",
-      description:
-        "Battle-tested 2D engine used by millions of mobile games. Its sprite batching, texture atlas management, and tilemap system are excellent production-grade references.",
-      tags: ["Sprite batching", "Texture atlas", "Mobile first", "Box2D + Chipmunk", "Audio engine"],
-      language: "C++",
-      stars: "★ 18k",
-      link: "https://github.com/cocos2d/cocos2d-x",
-    },
-    {
-      title: "photonstorm/phaser",
-      description:
-        "The dominant 2D browser game framework. Its scene manager, loader (asset pipeline), and WebGL renderer architecture are clean and well-documented — ideal for studying how a web-targeted engine organises these systems.",
-      tags: ["Browser / WebGL", "Scene manager", "Loader system", "WebGL renderer", "Arcade physics"],
-      language: "TypeScript",
-      stars: "★ 37k",
-      link: "https://github.com/photonstorm/phaser",
-    },
-    {
-      title: "raysan5/raylib",
-      description:
-        "Deceptively simple — no classes, no ECS, just functions. Studying raylib teaches you the minimal primitive set a 2D engine actually needs. Its entire public API fits on one page.",
-      tags: ["Minimal renderer", "Audio system", "Learn-by-reading", "No dependencies", "WASM"],
-      language: "C",
-      stars: "★ 24k",
-      link: "https://github.com/raysan5/raylib",
-    },
-    {
-      title: "love2d/love",
-      description:
-        "LÖVE exposes every engine subsystem (graphics, audio, physics, filesystem, input) as clean Lua modules. Reading its C++ source reveals how a scripting bridge sits on top of a native engine layer.",
-      tags: ["OpenGL renderer", "Box2D binding", "OpenAL", "Filesystem layer", "Lua scripting"],
-      language: "C++ / Lua",
-      stars: "★ 5k",
-      link: "https://github.com/love2d/love",
-    },
-    {
-      title: "FyroxEngine/Fyrox",
-      description:
-        "The only Rust engine with a full scene editor comparable to Godot. Strong for studying how an editor integrates with an ECS runtime and how serialization, property inspection, and undo/redo are architected.",
-      tags: ["Scene editor", "ECS", "2D + 3D renderer", "Asset browser", "Rapier physics"],
-      language: "Rust",
-      stars: "★ 8k",
-      link: "https://github.com/FyroxEngine/Fyrox",
-    },
-    {
-      title: "libgdx/libgdx",
-      description:
-        "14-year-old cross-platform engine still shipping games. Its SpriteBatch, AssetManager, InputProcessor, and Box2D integration are textbook implementations of the core 2D systems a game needs.",
-      tags: ["SpriteBatch", "AssetManager", "Android / iOS", "Box2D", "OpenAL"],
-      language: "Java / Kotlin",
-      stars: "★ 23k",
-      link: "https://github.com/libgdx/libgdx",
-    },
-    {
-      title: "TheCherno/Hazel",
-      description:
-        "The companion repo to The Cherno's YouTube series. Clean layered architecture — application → layer stack → renderer → ECS. Ideal to read alongside the videos as a real, buildable codebase.",
-      tags: ["OpenGL + Vulkan", "entt ECS", "ImGui editor", "Educational", "Well-documented"],
-      language: "C++",
-      stars: "★ 15k",
-      link: "https://github.com/TheCherno/Hazel",
-    },
+    { title: "godotengine/godot", language: "C++", tags: ["GUI Editor", "2D/3D Renderer", "Audio Bus"], link: "https://github.com/godotengine/godot" },
+    { title: "bevyengine/bevy", language: "Rust", tags: ["ECS", "Asset Server", "wgpu"], link: "https://github.com/bevyengine/bevy" },
+    { title: "SanderMertens/flecs", language: "C", tags: ["ECS", "High-Performance", "Data-Oriented"], link: "https://github.com/SanderMertens/flecs" },
+    { title: "friflo/Friflo.Engine.ECS", language: "C#", tags: ["ECS", "High-Performance"], link: "https://github.com/friflo/Friflo.Engine.ECS" },
+    { title: "cocos2d/cocos2d-x", language: "C++", tags: ["Sprite Batching", "Mobile First", "2D"], link: "https://github.com/cocos2d/cocos2d-x" },
+    { title: "photonstorm/phaser", language: "TypeScript", tags: ["Browser", "WebGL", "2D Framework"], link: "https://github.com/photonstorm/phaser" },
+    { title: "raysan5/raylib", language: "C", tags: ["Minimal Renderer", "Educational", "No Dependencies"], link: "https://github.com/raysan5/raylib" },
+    { title: "love2d/love", language: "C++ / Lua", tags: ["2D Framework", "Lua Binding", "OpenGL"], link: "https://github.com/love2d/love" },
+    { title: "FyroxEngine/Fyrox", language: "Rust", tags: ["Scene Editor", "ECS", "2D/3D"], link: "https://github.com/FyroxEngine/Fyrox" },
+    { title: "gideros/gideros", language: "C++ / Lua", tags: ["2D/3D", "Mobile", "Framework"], link: "https://github.com/gideros/gideros" },
+    { title: "isadorasophia/murder", language: "C#", tags: ["ECS", "Pixel Art", "Framework"], link: "https://github.com/isadorasophia/murder" },
+    { title: "study-game-engines/godot-shaders", language: "GLSL", tags: ["Shaders", "Godot", "Graphics"], link: "https://github.com/study-game-engines/godot-shaders" },
+    { title: "libgdx/libgdx", language: "Java", tags: ["Framework", "Android/iOS", "2D"], link: "https://github.com/libgdx/libgdx" },
+    { title: "TheCherno/Hazel", language: "C++", tags: ["Educational", "Vulkan/OpenGL", "ECS"], link: "https://github.com/TheCherno/Hazel" },
   ];
 
-  // Helper: tag color styles (dark theme friendly)
+  const filters = ["All", "C++ / C", "Rust", "C#", "Web / JS", "ECS", "Shaders"];
+
+  const filteredRepos = githubResources.filter(repo => {
+    if (activeFilter === "All") return true;
+    if (activeFilter === "C++ / C") return repo.language.includes("C++") || repo.language === "C";
+    if (activeFilter === "Rust") return repo.language === "Rust";
+    if (activeFilter === "C#") return repo.language === "C#";
+    if (activeFilter === "Web / JS") return repo.language === "TypeScript" || repo.language.includes("JS");
+    if (activeFilter === "ECS") return repo.tags.some(t => t.toLowerCase().includes("ecs"));
+    if (activeFilter === "Shaders") return repo.tags.some(t => t.toLowerCase().includes("shader") || t.toLowerCase().includes("renderer") || t.toLowerCase().includes("glsl"));
+    return true;
+  });
+
   const getTagStyles = (tag) => {
     const lowerTag = tag.toLowerCase();
-    if (lowerTag.includes("render")) return "bg-blue-900/50 text-blue-200";
-    if (lowerTag.includes("ecs")) return "bg-yellow-900/50 text-yellow-200";
-    if (lowerTag.includes("gui") || lowerTag.includes("scene editor") || lowerTag.includes("editor")) return "bg-green-900/50 text-green-200";
-    if (lowerTag.includes("physics")) return "bg-red-900/50 text-red-200";
-    if (lowerTag.includes("asset")) return "bg-purple-900/50 text-purple-200";
-    if (lowerTag.includes("audio")) return "bg-pink-900/50 text-pink-200";
-    if (lowerTag.includes("mobile")) return "bg-cyan-900/50 text-cyan-200";
-    if (lowerTag.includes("web") || lowerTag.includes("browser")) return "bg-emerald-900/50 text-emerald-200";
-    return "bg-gray-800 text-gray-300";
+    if (lowerTag.includes("render") || lowerTag.includes("glsl") || lowerTag.includes("shader")) return "bg-[rgba(108,138,255,0.15)] text-e-indigo border-[rgba(108,138,255,0.3)]";
+    if (lowerTag.includes("ecs") || lowerTag.includes("data")) return "bg-[rgba(245,158,11,0.15)] text-e-amber border-[rgba(245,158,11,0.3)]";
+    if (lowerTag.includes("gui") || lowerTag.includes("editor")) return "bg-[rgba(74,222,128,0.15)] text-e-green border-[rgba(74,222,128,0.3)]";
+    if (lowerTag.includes("audio")) return "bg-[rgba(244,114,182,0.15)] text-e-pink border-[rgba(244,114,182,0.3)]";
+    if (lowerTag.includes("mobile") || lowerTag.includes("web") || lowerTag.includes("browser")) return "bg-[rgba(45,212,191,0.15)] text-e-teal border-[rgba(45,212,191,0.3)]";
+    return "bg-e-bg3 text-e-mu border-e-bd2";
   };
 
   return (
-    <div className="bg-e-bg text-e-tx font-sans text-[15px] leading-[1.7] flex min-h-screen overflow-x-hidden">
-      <main className="md:ml-[260px] flex-1 min-w-0">
-        <div className="px-8 md:px-14 pb-20 pt-[60px]">
-          <SectionHeader 
-            id="resources" 
-            sectionNumber="§ 5.3" 
-            titleText="Learning" 
-            highlightText="Resources" 
-          />
-          
-          <Paragraph className="mb-10">
-            A curated collection of the best technical series, repositories, and deep-dives for building a 2D Game Engine from scratch.
+    <div className="bg-e-bg text-e-tx font-sans text-[15px] leading-[1.7] flex min-h-screen overflow-x-hidden scroll-smooth w-full">
+      
+      {/* CSS Reset & Theme - Preserving original styling */}
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap');
+        
+        :root {
+          --e-bg: #0b0f19;
+          --e-bg2: #111520;
+          --e-bg3: #1a1f2e;
+          --e-tx: #f1f5f9;
+          --e-mu: #94a3b8;
+          --e-dim: #64748b;
+          --e-bd: #222b3d;
+          --e-bd2: #334155;
+          --e-indigo: #818cf8;
+          --e-teal: #2dd4bf;
+          --e-purple: #c084fc;
+          --e-amber: #fbbf24;
+          --e-green: #4ade80;
+          --e-red: #f87171;
+          --e-pink: #f472b6;
+        }
+
+        body { font-family: 'Inter', sans-serif; background-color: var(--e-bg); color: var(--e-tx); margin: 0; padding: 0; }
+        .font-sans { font-family: 'Inter', sans-serif; }
+        .font-serif { font-family: 'Playfair Display', serif; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        .bg-e-bg { background-color: var(--e-bg); }
+        .bg-e-bg2 { background-color: var(--e-bg2); }
+        .bg-e-bg3 { background-color: var(--e-bg3); }
+        .text-e-tx { color: var(--e-tx); }
+        .text-e-mu { color: var(--e-mu); }
+        .text-e-dim { color: var(--e-dim); }
+        .border-e-bd { border-color: var(--e-bd); }
+        .border-e-bd2 { border-color: var(--e-bd2); }
+        .text-e-indigo { color: var(--e-indigo); }
+        .text-e-teal { color: var(--e-teal); }
+        .text-e-amber { color: var(--e-amber); }
+        .text-e-green { color: var(--e-green); }
+        .text-e-red { color: var(--e-red); }
+
+        ::-webkit-scrollbar { width:6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: var(--e-bg2); }
+        ::-webkit-scrollbar-thumb { background: var(--e-bd2); border-radius:3px; }
+      `}</style>
+
+      <main id="main" className="flex-1 w-full min-w-0">
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 md:px-10 lg:px-14 pb-20 pt-10 md:pt-[60px]">
+          <SectionHeader id="resources" sectionNumber="§ 5.3" titleText="Learning" highlightText="Resources" />
+          <Paragraph className="mb-10 max-w-3xl">
+            A curated collection of the best technical series, repositories, architectures, and deep-dives for building a game engine from scratch.
           </Paragraph>
 
-          {/* YouTube Section */}
-          <section className="mb-16">
-            <div className="font-mono text-[10px] tracking-[.1em] uppercase text-e-dim mb-5">
-              YouTube — understand how game engines work
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-              {youtubeResources.map((resource, idx) => (
-                <div
-                  key={idx}
-                  className="bg-e-bg2 border border-e-bd rounded-xl p-5 transition-all hover:border-e-bd2 flex flex-col"
-                >
-                  <div className="flex items-start gap-3">
-                    <div className="flex-shrink-0 w-9 h-9 rounded-md bg-e-red-b text-e-red flex items-center justify-center text-sm font-bold">
-                      ▶
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-base font-medium text-e-tx">
-                        {resource.title}
-                      </h3>
-                      <p className="text-sm text-e-mu mt-1 leading-relaxed">
-                        {resource.description}
-                      </p>
-                      <div className="flex flex-wrap gap-1.5 mt-3">
-                        {resource.tags.map((tag, tidx) => (
-                          <span
-                            key={tidx}
-                            className={`text-[11px] px-2 py-0.5 rounded-full font-medium ${getTagStyles(tag)}`}
-                          >
-                            {tag}
-                          </span>
+          {/* Video Series Section */}
+            <section id="video-courses" className="mb-14">
+              <div className="font-mono text-[10px] tracking-[.1em] uppercase text-e-dim mb-5 flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-e-red"></span> Video Series
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {youtubeResources.map((resource, idx) => (
+                  <div key={idx} className="bg-e-bg2 border border-e-bd rounded-xl p-5 hover:border-e-bd2 transition-colors flex flex-col">
+                    <h3 className="text-[15px] font-semibold text-e-tx mb-2">{resource.title}</h3>
+                    <p className="text-[13px] text-e-mu mb-4 flex-1">{resource.description}</p>
+                    <div className="flex items-center justify-between mt-auto pt-4 border-t border-e-bd">
+                      <div className="flex flex-wrap gap-1.5">
+                        {resource.tags.slice(0, 2).map((tag, tidx) => (
+                          <span key={tidx} className="text-[10px] font-mono text-e-dim">{tag}</span>
                         ))}
                       </div>
-                      <a
-                        href={resource.link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 text-xs text-e-indigo hover:opacity-80 mt-4"
-                      >
-                        {resource.linkText}
-                      </a>
+                      <a href={resource.link} target="_blank" rel="noopener noreferrer" className="text-[12px] text-e-indigo hover:underline">Watch ↗</a>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          </section>
+                ))}
+              </div>
+            </section>
 
-          <hr className="border-e-bd my-12" />
+            {/* Articles & Lists Section */}
+            <section id="reading" className="mb-16">
+              <div className="font-mono text-[10px] tracking-[.1em] uppercase text-e-dim mb-5 flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-e-teal"></span> Articles & Guides
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {readingResources.map((item, idx) => (
+                  <a key={idx} href={item.link} target="_blank" rel="noopener noreferrer" className="block bg-e-bg2 border border-e-bd rounded-xl p-5 hover:bg-e-bg3 transition-colors group">
+                    <h3 className="text-[15px] font-semibold text-e-tx group-hover:text-e-teal transition-colors flex items-center justify-between">
+                      {item.title}
+                      <span className="text-e-dim group-hover:text-e-teal">↗</span>
+                    </h3>
+                    <div className="text-[11px] font-mono text-e-dim my-1.5">By {item.author}</div>
+                    <p className="text-[13px] text-e-mu m-0 mt-2">{item.description}</p>
+                  </a>
+                ))}
+              </div>
+            </section>
 
-          {/* GitHub Section */}
-          <section>
-            <div className="font-mono text-[10px] tracking-[.1em] uppercase text-e-dim mb-5">
-              GitHub — 2D game engine repositories
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-              {githubResources.map((repo, idx) => (
-                <div
-                  key={idx}
-                  className="bg-e-bg2 border border-e-bd rounded-xl p-5 transition-all hover:border-e-bd2 flex flex-col"
-                >
-                  <div className="flex items-start gap-3">
-                    <div className="flex-shrink-0 w-9 h-9 rounded-md bg-e-bg3 text-e-mu flex items-center justify-center">
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 2C6.48 2 2 6.48 2 12c0 4.42 2.87 8.17 6.84 9.49.5.09.68-.22.68-.48v-1.7c-2.78.6-3.37-1.34-3.37-1.34-.45-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.61.07-.61 1 .07 1.53 1.03 1.53 1.03.89 1.52 2.34 1.08 2.91.83.09-.65.35-1.08.63-1.33-2.22-.25-4.56-1.11-4.56-4.95 0-1.09.39-1.99 1.03-2.69-.1-.25-.45-1.27.1-2.65 0 0 .84-.27 2.75 1.02A9.56 9.56 0 0 1 12 6.8c.85.004 1.71.115 2.51.337 1.91-1.29 2.75-1.02 2.75-1.02.55 1.38.2 2.4.1 2.65.64.7 1.03 1.6 1.03 2.69 0 3.85-2.34 4.7-4.57 4.95.36.31.68.92.68 1.85v2.74c0 .27.18.58.69.48A10.01 10.01 0 0 0 22 12c0-5.52-4.48-10-10-10z" />
-                      </svg>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex flex-wrap items-center justify-between gap-2">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <h3 className="text-base font-medium text-e-tx break-words">
-                            {repo.title}
-                          </h3>
-                          <span className="text-[11px] px-2 py-0.5 rounded-full bg-e-bg3 text-e-mu font-mono">
+            <hr className="border-e-bd my-12" />
+
+            {/* GitHub Tabular Section */}
+            <section id="repositories">
+              <div className="font-mono text-[10px] tracking-[.1em] uppercase text-e-dim mb-5 flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-e-indigo"></span> Architecture Reference Repositories
+              </div>
+              
+              {/* Filter Pills */}
+              <div className="flex flex-wrap gap-2 mb-6">
+                {filters.map(filter => (
+                  <button
+                    key={filter}
+                    onClick={() => setActiveFilter(filter)}
+                    className={`px-3 py-1.5 rounded-full text-[12px] font-medium transition-colors border ${
+                      activeFilter === filter 
+                        ? 'bg-e-indigo text-white border-e-indigo' 
+                        : 'bg-e-bg2 text-e-mu border-e-bd hover:border-e-bd2 hover:text-e-tx'
+                    }`}
+                  >
+                    {filter}
+                  </button>
+                ))}
+              </div>
+
+              {/* Data Table */}
+              <Table>
+                <TableHead headers={['Repository', 'Language', 'Architecture Tags', 'Action']} />
+                <tbody>
+                  {filteredRepos.length > 0 ? (
+                    filteredRepos.map((repo, idx) => (
+                      <TableRow key={idx}>
+                        <TableCell highlight="text-e-tx font-medium">{repo.title}</TableCell>
+                        <TableCell>
+                          <span className="text-[12px] text-e-mu bg-e-bg3 border border-e-bd2 px-2 py-0.5 rounded font-mono">
                             {repo.language}
                           </span>
-                        </div>
-                        <span className="text-xs text-e-mu whitespace-nowrap">{repo.stars}</span>
-                      </div>
-                      <p className="text-sm text-e-mu mt-1 leading-relaxed">
-                        {repo.description}
-                      </p>
-                      <div className="flex flex-wrap gap-1.5 mt-3">
-                        {repo.tags.map((tag, tidx) => (
-                          <span
-                            key={tidx}
-                            className={`text-[11px] px-2 py-0.5 rounded-full font-medium ${getTagStyles(tag)}`}
+                        </TableCell>
+                        <TableCell className="w-1/2">
+                          <div className="flex flex-wrap gap-1.5">
+                            {repo.tags.map((tag, tidx) => (
+                              <span
+                                key={tidx}
+                                className={`text-[10px] font-mono px-2 py-0.5 rounded border ${getTagStyles(tag)}`}
+                              >
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <a
+                            href={repo.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[12px] font-medium text-e-indigo hover:text-white transition-colors flex items-center gap-1"
                           >
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-                      <a
-                        href={repo.link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 text-xs text-e-indigo hover:opacity-80 mt-4 break-all"
-                      >
-                        {repo.link} ↗
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-        </div>
-      </main>
-    </div>
-  );
-};
+                            Source ↗
+                          </a>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="4" className="text-center py-8 text-e-dim text-[13px]">
+                        No repositories found matching the "{activeFilter}" filter.
+                      </td>
+                    </tr>
+                  )}
+            </tbody>
+          </Table>
+        </section>
 
-export default Resources;
+      </div>
+    </main>
+  </div>
+  );
+}
